@@ -1,0 +1,4 @@
+CompileFlags:
+  Add:
+    - "-I./ext/json/include"
+    - "-I./ext/fmt/include"
