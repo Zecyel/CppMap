@@ -66,12 +66,17 @@ const chosen = ref<number[]>([])
 <template>
   <div fixed inset-0 flex>
     <div w-120 p-4 flex flex-col gap-4>
-      <h1 text-3xl> Map </h1>
+      <div px-1 flex relative>
+        <h1 text-3xl> Map </h1>
+        <div absolute bottom-0 right-2 text-sm gray-200 op-80 font-serif>
+          by Zecyel
+        </div>
+      </div>
 
       <div>
         <label flex gap-2 items-center pl-2>
           <div i-carbon-search text-lg />
-          <input type="text" placeholder="Search..." flex-grow py-1 bg-transparent />
+          <input type="text" placeholder="Search..." flex-grow py-2 bg-transparent />
         </label>
 
         <MultiSelect :num="days[2].length" v-model="chosen" v-slot="{ index }">

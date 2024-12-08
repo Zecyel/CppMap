@@ -19,11 +19,11 @@ defineProps<{
     <div flex gap-2>
       <div text-lg> {{ location.name }} </div>
       <div flex-grow />
-      <div v-if="location.distance" flex items-center gap-.5 op-80>
+      <div v-if="location.distance" w-16 flex items-center gap-.5 op-80 font-mono>
         <div i-carbon-car />
         {{ location.distance }}
       </div>
-      <div v-if="location.time" flex items-center gap-.5 op-80>
+      <div v-if="location.time" w-16 flex items-center gap-.5 op-80 font-mono>
         <div i-carbon-time />
         {{ location.time }}
       </div>
