@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>MapLibre GL JS 自定义矢量地图</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <!-- 引入 MapLibre GL JS 的 CSS -->
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <!-- 引入 MapLibre GL JS 的 JS -->
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+    <script>
+        // 定义您的 TileJSON
+        const tileJSON = {
+            "tiles": [
+                "http://localhost:1234/data/shanghai/{z}/{x}/{y}.pbf"
+            ],
+            "minzoom": 4,
+            "maxzoom": 14,
+            "bounds": [
+                120.847034,
+                30.639095,
+                123.679027,
+                31.884555
+            ],
+            "center": [
+                122.26303,
+                31.261825,
+                9
+            ],
+            "vector_layers": [
+                { "id": "place", "fields": { "class": "String", "name:latin": "String", "rank": "Number" }, "minzoom": 0, "maxzoom": 14 },
+                { "id": "poi", "fields": { "class": "String", "name:latin": "String", "rank": "Number" }, "minzoom": 12, "maxzoom": 14 },
+                { "id": "transportation", "fields": { "class": "String" }, "minzoom": 4, "maxzoom": 14 },
+                { "id": "transportation_name", "fields": { "class": "String", "name:latin": "String" }, "minzoom": 10, "maxzoom": 14 },
+                { "id": "building", "fields": {}, "minzoom": 13, "maxzoom": 14 },
+                { "id": "water", "fields": { "class": "String" }, "minzoom": 6, "maxzoom": 14 },
+                { "id": "waterway", "fields": { "class": "String", "intermittent": "Number" }, "minzoom": 6, "maxzoom": 14 }
+            ]
+        };
+
+        // 初始化地图
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: {
+                version: 8,
+                glyphs: 'https://demotiles.maplibre.org/fonts/{fontstack}/{range}.pbf',
+                // 定义地图的源
+                sources: {
+                    'shanghai-tiles': {
+                        type: 'vector',
+                        tiles: tileJSON.tiles,
+                        minzoom: tileJSON.minzoom,
+                        maxzoom: tileJSON.maxzoom,
+                        bounds: tileJSON.bounds
+                    }
+                },
+                // 定义地图的图层
+                layers: [
+                    // 水域图层
+                    {
+                        id: 'water',
+                        type: 'fill',
+                        source: 'shanghai-tiles',
+                        'source-layer': 'water',
+                        paint: {
+                            'fill-color': '#a0c8f0'
+                        }
+                    },
+                    // 建筑物图层
+                    {
+                        id: 'building',
+                        type: 'fill',
+                        source: 'shanghai-tiles',
+                        'source-layer': 'building',
+                        paint: {
+                            'fill-color': '#888888',
+                            'fill-opacity': 0.5
+                        }
+                    },
+                    // 交通图层
+                    {
+                        id: 'transportation',
+                        type: 'line',
+                        source: 'shanghai-tiles',
+                        'source-layer': 'transportation',
+                        paint: {
+                            'line-color': '#ff0000',
+                            'line-width': 2
+                        }
+                    },
+                    // 地点标签图层
+                    {
+                        id: 'place-label',
+                        type: 'symbol',
+                        source: 'shanghai-tiles',
+                        'source-layer': 'place',
+                        layout: {
+                            'text-field': ['get', 'name:latin'],
+                            'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                            'text-size': 12
+                        },
+                        paint: {
+                            'text-color': '#000000'
+                        }
+                    },
+                    // 添加更多图层，根据您的需求和 TileJSON 中的 vector_layers
+                ]
+            },
+            center: [tileJSON.center[0], tileJSON.center[1]],
+            zoom: tileJSON.center[2]
+        });
+
+        // 添加地图导航控件（可选）
+        map.addControl(new maplibregl.NavigationControl());
+
+        // 处理地图加载完成后的操作（如需要）
+        map.on('load', () => {
+            console.log('地图已加载');
+            // 您可以在此处添加更多自定义逻辑
+        });
+
+    </script>
+</body>
+</html>
