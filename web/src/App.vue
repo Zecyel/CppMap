@@ -1,30 +1,90 @@
 <script setup lang="ts">
-import Leaflet from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { onMounted, ref } from 'vue';
-
-const officialTile = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const myTile = window.location.origin + import.meta.env.BASE_URL + '{z}/{x}/{y}.png';
+import Routes from './components/Routes.vue';
+import Tabs from './components/Tabs.vue';
+import MultiSelect from './components/MultiSelect.vue';
+import LocationShow, { Location } from './components/LocationShow.vue';
+import { mountMap } from './map';
 
 const mapEl = ref<HTMLElement | null>(null);
 
 onMounted(() => {
-  const map = Leaflet.map(mapEl.value!).setView([31.3, 121.5], 13);
-  Leaflet.tileLayer(myTile, {
-    minZoom: 5,
-    maxZoom: 18,
-  }).addTo(map);
-  map.addControl(Leaflet.control.scale());
+  mountMap(mapEl.value!)
 })
+
+const days = [[
+  {
+    name: 'Shanghai',
+    description: 'Some description, may be quite long......',
+    coord: [31.3, 121.5],
+    distance: '10km',
+    time: '10:00',
+  },
+], [
+  {
+    name: 'Shanghai',
+    description: 'Some description, may be quite long......',
+    coord: [31.3, 121.5],
+    distance: '10km',
+    time: '10:00',
+  },
+  {
+    name: 'Shanghai',
+    description: 'Some description, may be quite long......',
+    coord: [31.3, 121.5],
+    distance: '10km',
+    time: '10:00',
+  },
+], [
+  {
+    name: 'Shanghai',
+    description: 'Some description, may be quite long......',
+    coord: [31.3, 121.5],
+    distance: '10km',
+    time: '10:00',
+  },
+  {
+    name: 'Shanghai',
+    description: 'Some description, may be quite long......',
+    coord: [31.3, 121.5],
+    distance: '10km',
+    time: '10:00',
+  },
+  {
+    name: 'Shanghai',
+    description: 'Some description, may be quite long......',
+    coord: [31.3, 121.5],
+    distance: '10km',
+    time: '10:00',
+  },
+]] satisfies Location[][]
+
+const chosen = ref<number[]>([])
 </script>
 
 <template>
-  <div ref="mapEl" id="map" />
+  <div fixed inset-0 flex>
+    <div w-120 p-4 flex flex-col gap-4>
+      <h1 text-3xl> Map </h1>
+
+      <div>
+        <label flex gap-2 items-center pl-2>
+          <div i-carbon-search text-lg />
+          <input type="text" placeholder="Search..." flex-grow py-1 bg-transparent />
+        </label>
+
+        <MultiSelect :num="days[2].length" v-model="chosen" v-slot="{ index }">
+          <LocationShow :location="days[2][index]" hover:bg-gray-200 active:bg-gray-300 px-2 py-1 flex-grow />
+        </MultiSelect>
+      </div>
+
+      <Tabs name="Day" :num="days.length" v-slot="{ index }">
+        <Routes :locations="days[index]"/>
+      </Tabs>
+    </div>
+    <div ref="mapEl" id="map" flex-grow />
+  </div>
 </template>
 
-<style scoped>
-#map {
-  position: fixed;
-  inset: 0;
-}
-</style>
+<style scoped></style>

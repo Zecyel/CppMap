@@ -1,0 +1,16 @@
+.leaflet-attribution-flag {
+  display: none !important;
+}
+
+* {
+  transition-property: background-color, border-color;
+  @apply duration-200;
+}
+
+input[type="text"] {
+  @apply outline-none;
+}
+
+label:has(input:focus) {
+  @apply bg-gray-200;
+}
