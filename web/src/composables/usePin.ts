@@ -8,13 +8,13 @@ import { map, onMapMounted } from "../map";
 const iconNormal = L.icon({
   iconUrl: normalIcon,
   iconSize: [32, 32],
-  iconAnchor: [16, 32],
+  iconAnchor: [16, 30],
 });
 
 const iconFocused = L.icon({
   iconUrl: focusedIcon,
   iconSize: [32, 32],
-  iconAnchor: [16, 32],
+  iconAnchor: [16, 30],
 });
 
 const focusedCoord = ref<string>();
@@ -34,6 +34,8 @@ export function usePin(coord: MaybeRefOrGetter<L.LatLngExpression>) {
     map.value?.flyTo(toValue(coord), 18);
     focusedCoord.value = toValue(coord).toString();
   }
+
+  pin.addEventListener("click", focus)
 
   watchEffect(() => {
     const focused = focusedCoord.value === toValue(coord).toString();

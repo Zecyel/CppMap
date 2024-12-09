@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import 'leaflet/dist/leaflet.css'
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import Routes from './components/Routes.vue';
 import Tabs from './components/Tabs.vue';
 import MultiSelect from './components/MultiSelect.vue';
 import LocationShow, { Location } from './components/LocationShow.vue';
 import { mountMap } from './map';
+import { usePath } from './composables/usePath';
 
 const mapEl = ref<HTMLElement | null>(null);
 
@@ -40,7 +41,7 @@ const days = [[
   {
     name: 'Shanghai',
     description: 'Some description, may be quite long......',
-    coord: [31.303, 121.503],
+    coord: [31.301, 121.503],
     distance: '10km',
     time: '10:00',
   },
@@ -61,6 +62,8 @@ const days = [[
 ]] satisfies Location[][]
 
 const chosen = ref<number[]>([])
+const activeDay = ref(0)
+usePath(() => days[activeDay.value].map(({ coord }) => coord))
 </script>
 
 <template>
@@ -84,8 +87,8 @@ const chosen = ref<number[]>([])
         </MultiSelect>
       </div>
 
-      <Tabs name="Day" :num="days.length" v-slot="{ index }">
-        <Routes v-for="day, i in days" :key="i" v-show="i === index" :locations="day" />
+      <Tabs name="Day" v-model="activeDay" :num="days.length">
+        <Routes v-for="day, i in days" :key="i" v-show="i === activeDay" :locations="day" />
       </Tabs>
     </div>
     <div ref="mapEl" id="map" flex-grow />

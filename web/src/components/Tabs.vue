@@ -1,30 +1,32 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { watch } from 'vue';
 
-defineProps<{
+const props = defineProps<{
   name: string,
   num: number,
 }>()
 
-defineSlots<{
-  default(props: { index: number }): any
-}>()
+const active = defineModel<number>({ default: 0 })
 
-const active = ref(1)
+watch(() => props.num, () => {
+  if (active.value > props.num) {
+    active.value = props.num
+  }
+})
 </script>
 
 <template>
   <div flex flex-col gap-2>
     <div of-x-auto flex style="scrollbar-width: none;">
-      <div v-for="i in num" :key="i" @click="active = i" px-2 py-1 cursor-pointer select-none
-        hover:bg-gray-200 active:bg-gray-300 
-        :class="i === active ? 'bg-gray-200' : ''"
+      <div v-for="i in num" :key="i" @click="active = i - 1"
+        px-2 py-1 cursor-pointer select-none hover:bg-gray-200 active:bg-gray-300 
+        :class="i - 1 === active ? 'bg-gray-200' : ''"
       >
         {{ name }} {{ i }}
       </div>
     </div>
     <div>
-      <slot :index="active - 1" />
+      <slot />
     </div>
   </div>
 </template>

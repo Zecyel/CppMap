@@ -1,5 +1,5 @@
 import L from "leaflet";
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import errorTileUrl from "./assets/fallback_tile.png?url";
 
 const officialTile = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
