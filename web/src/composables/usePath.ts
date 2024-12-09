@@ -15,6 +15,9 @@ export function usePath(path: MaybeRefOrGetter<L.LatLngExpression[]>) {
 
   watchEffect(() => {
     polyline.setLatLngs(toValue(path));
+    setTimeout(() => {
+      map.value?.fitBounds(polyline.getBounds().pad(0.1));
+    }, 30)
   })
 
   function remove() {
@@ -28,4 +31,3 @@ export function usePath(path: MaybeRefOrGetter<L.LatLngExpression[]>) {
     remove,
   }
 }
-
