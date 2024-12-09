@@ -85,7 +85,7 @@ const chosen = ref<number[]>([])
       </div>
 
       <Tabs name="Day" :num="days.length" v-slot="{ index }">
-        <Routes :locations="days[index]"/>
+        <Routes v-for="day, i in days" :key="i" v-show="i === index" :locations="day" />
       </Tabs>
     </div>
     <div ref="mapEl" id="map" flex-grow />

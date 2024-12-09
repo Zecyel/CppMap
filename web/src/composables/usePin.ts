@@ -1,9 +1,9 @@
-import { MaybeRefOrGetter, ref, toValue, watchEffect } from "vue";
+import { tryOnScopeDispose } from "@vueuse/core";
 import L from "leaflet";
-import { tryOnScopeDispose } from "@vueuse/core"
-import { map, onMapMounted } from "../map";
-import normalIcon from "../assets/pin.svg?url";
+import { MaybeRefOrGetter, ref, toValue, watchEffect } from "vue";
 import focusedIcon from "../assets/pin-focused.svg?url";
+import normalIcon from "../assets/pin.svg?url";
+import { map, onMapMounted } from "../map";
 
 const iconNormal = L.icon({
   iconUrl: normalIcon,
@@ -41,12 +41,13 @@ export function usePin(coord: MaybeRefOrGetter<L.LatLngExpression>) {
   })
 
   function remove() {
-    pin.removeFrom(map.value!);
+    pin.remove();
   }
 
   tryOnScopeDispose(remove)
 
   return {
+    pin,
     remove,
     focus,
   }
