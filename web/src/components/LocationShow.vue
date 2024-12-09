@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { usePin } from '../composables/usePin'
 import { map } from '../map'
 
 export interface Location {
@@ -9,13 +10,15 @@ export interface Location {
   time?: string
 }
 
-defineProps<{
+const props = defineProps<{
   location: Location
 }>()
+
+const { focus } = usePin(() => props.location.coord)
 </script>
 
 <template>
-  <div @click="map?.flyTo(location.coord)">
+  <div @click="focus">
     <div flex gap-2>
       <div text-lg> {{ location.name }} </div>
       <div flex-grow />
