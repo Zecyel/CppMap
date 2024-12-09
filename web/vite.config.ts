@@ -6,19 +6,17 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import UnoCSS from 'unocss/vite'
 
 const tileDir = fileURLToPath(new URL('../tile', import.meta.url))
+const emptyTile = fileURLToPath(new URL('./src/assets/fallback_tile.png', import.meta.url))
 
 function configureServer(server: ViteDevServer | PreviewServer) {
   server.middlewares.use('/tile', (req, res) => {
     const urlPath = req.url ? req.url.split('?', 2)[0] : '';
     const path = `${tileDir}${urlPath}`
-    if (fs.existsSync(path)) {
-      res.statusCode = 200
-      res.setHeader('Content-Type', 'image/png')
-      fs.createReadStream(path).pipe(res)
-    } else {
-      res.statusCode = 404
-      res.end()
-    }
+    res.statusCode = 200
+    res.setHeader('Content-Type', 'image/png')
+    fs.createReadStream(
+      fs.existsSync(path) ? path : emptyTile
+    ).pipe(res)
   })
 }
 
