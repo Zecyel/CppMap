@@ -1,6 +1,7 @@
 import { Location } from "../components/LocationShow.vue"
 
-export async function computeOptions(city: string) {
+export async function computeOptions(city: string, days: number) {
+  await new Promise(resolve => setTimeout(resolve, 1000))
   return [
     {
       name: 'Location 1',

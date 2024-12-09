@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import 'leaflet/dist/leaflet.css'
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch, watchEffect } from 'vue';
 import Routes from './components/Routes.vue';
 import Tabs from './components/Tabs.vue';
 import MultiSelect from './components/MultiSelect.vue';
@@ -17,17 +17,35 @@ onMounted(() => {
 })
 
 const city = ref('')
+const dayNum = ref(3)
+const computing = ref(false)
+const canceled = ref(false)
 const options = ref<Options>()
 const chosenIndexes = ref<number[]>([])
 const chosen = computed(() => chosenIndexes.value.map(i => options.value![i]))
-const days = computed(() => computeDays(chosen.value))
+const days = computed(() => computeDays(chosen.value, dayNum.value))
 
 const activeDay = ref(0)
 usePath(() => days.value?.[activeDay.value]?.map(({ coord }) => coord))
 
 async function run() {
-  options.value = await computeOptions(city.value)
+  computing.value = true
+  canceled.value = false
+  const result = await computeOptions(city.value, dayNum.value)
+  computing.value = false
+  if (!canceled.value) {
+    options.value = result
+  }
+  canceled.value = false
 }
+
+function reset() {
+  options.value = undefined
+  computing.value = false
+  canceled.value = true
+}
+
+watch([city, dayNum], reset)
 </script>
 
 <template>
@@ -48,18 +66,32 @@ async function run() {
         <div flex>
           <label flex-grow flex gap-3 items-center pl-2>
             <div i-carbon-building text-lg />
-            <input v-model="city" type="text" placeholder="Search city..." flex-grow py-2 bg-transparent />
+            <input v-model="city" type="text" placeholder="Search city..." flex-grow py-2 bg-transparent w-0 />
           </label>
-          <button @click="run">
-            Run!
-          </button>
+          <label flex-grow flex gap-3 items-center pl-2>
+            <div i-carbon-window-overlay text-lg op-80 />
+            <input v-model="dayNum" type="number" placeholder="Days" flex-grow py-2 bg-transparent w-0 />
+          </label>
+          <label flex-grow flex gap-3 items-center pl-2>
+            <!-- TODO: -->
+          </label>
         </div>
+        <button v-if="!computing && !options" @click="run" w-full text-center py-2 text-lg bg-gray-100>
+          Run!
+        </button>
+        <template v-if="computing">
+          <div relative w-full text-center py-1 text-lg bg-gray-100 flex gap-2 items-center justify-center>
+            <div i-svg-spinners-90-ring-with-bg op-60 />
+            <div op-60> Computing... </div>
+            <div absolute inset-0 flex items-center justify-end class="group">
+              <button op-40 group-hover:op-80 hover:op-100 h-full @click="reset">
+                <div i-carbon-close-large />
+              </button>
+            </div>
+          </div>
+        </template>
       </div>
-
-      <template v-if="!options">
-
-      </template>
-      <template v-else>
+      <template v-if="options">
         <div>
           <h2 text-xl flex gap-2 items-center op-90 tracking-wide>
             <div i-carbon-list-checked />
@@ -67,7 +99,8 @@ async function run() {
           </h2>
 
           <MultiSelect :num="options.length" v-model="chosenIndexes" v-slot="{ index }">
-            <LocationShow :location="options[index]" hover:bg-gray-200 active:bg-gray-300 px-2 py-1 flex-grow show-pin />
+            <LocationShow :location="options[index]" hover:bg-gray-200 active:bg-gray-300 px-2 py-1 flex-grow
+              show-pin />
           </MultiSelect>
         </div>
 
