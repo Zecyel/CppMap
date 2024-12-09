@@ -18,6 +18,7 @@ onMounted(() => {
 
 const city = ref('')
 const dayNum = ref(3)
+const isRelax = ref(true)
 const computing = ref(false)
 const canceled = ref(false)
 const options = ref<Options>()
@@ -31,7 +32,7 @@ usePath(() => days.value?.[activeDay.value]?.map(({ coord }) => coord))
 async function run() {
   computing.value = true
   canceled.value = false
-  const result = await computeOptions(city.value, dayNum.value)
+  const result = await computeOptions(city.value, dayNum.value, isRelax.value)
   computing.value = false
   if (!canceled.value) {
     options.value = result
@@ -45,7 +46,7 @@ function reset() {
   canceled.value = true
 }
 
-watch([city, dayNum], reset)
+watch([city, dayNum, isRelax], reset)
 </script>
 
 <template>
@@ -66,14 +67,23 @@ watch([city, dayNum], reset)
         <div flex>
           <label flex-grow flex gap-3 items-center pl-2>
             <div i-carbon-building text-lg />
-            <input v-model="city" type="text" placeholder="Search city..." flex-grow py-2 bg-transparent w-0 />
+            <input v-model="city" type="text" placeholder="Search city..." flex-grow py-2 bg-transparent w-10 />
           </label>
           <label flex-grow flex gap-3 items-center pl-2>
             <div i-carbon-window-overlay text-lg op-80 />
             <input v-model="dayNum" type="number" placeholder="Days" flex-grow py-2 bg-transparent w-0 />
           </label>
-          <label flex-grow flex gap-3 items-center pl-2>
-            <!-- TODO: -->
+          <label flex-grow flex gap-2 items-center>
+            <div flex-grow grid grid-cols-2 w-10 h-full>
+              <div class="kind-button" :data-active="isRelax" @click="isRelax = true">
+                <div i-carbon-umbrella />
+                Relax
+              </div>
+              <div class="kind-button" :data-active="!isRelax" @click="isRelax = false">
+                <div i-carbon-running /> 
+                Fulfill
+              </div>
+            </div>
           </label>
         </div>
         <button v-if="!computing && !options" @click="run" w-full text-center py-2 text-lg bg-gray-100>
@@ -125,4 +135,17 @@ watch([city, dayNum], reset)
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.kind-button {
+  @apply relative flex items-end justify-end min-w-max uppercase text-black/80;
+  @apply tracking-tight select-none text-right px-1 hover:bg-gray-200 h-full;
+}
+
+.kind-button[data-active="true"] {
+  @apply bg-gray-300;
+}
+
+.kind-button > div {
+ @apply absolute left-1 top-1 text-2xl op-50;
+}
+</style>
