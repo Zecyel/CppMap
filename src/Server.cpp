@@ -67,7 +67,7 @@ void Server::setup_routes() {
     auto end_param = req.url_params.get("end");
 
     if (!start_param || !end_param) {
-      return crow::response(400, "Missing 'start' or 'end' parameter");
+      return add_cors_headers(crow::response(400, "Missing 'start' or 'end' parameter"));
     }
 
     NodeId start_id, end_id;
@@ -76,19 +76,19 @@ void Server::setup_routes() {
       end_id = std::stol(end_param);
     }
     catch (const std::exception& e) {
-      return crow::response(400, "Invalid 'start' or 'end' parameter format");
+      return add_cors_headers(crow::response(400, "Invalid 'start' or 'end' parameter format"));
     }
 
     // 检查节点是否存在
     if (map_.get_nodes().find(start_id) == map_.get_nodes().end() ||
       map_.get_nodes().find(end_id) == map_.get_nodes().end()) {
-      return crow::response(400, "Invalid 'start' or 'end' node ID");
+      return add_cors_headers(crow::response(400, "Invalid 'start' or 'end' node ID"));
     }
 
     // 计算最短路径
     std::vector<NodeId> path = map_.shortest_path(start_id, end_id);
     if (path.empty()) {
-      return crow::response(404, "No path found");
+      return add_cors_headers(crow::response(404, "No path found"));
     }
 
     // 返回路径
@@ -113,7 +113,7 @@ void Server::setup_routes() {
     auto ends_param = req.url_params.get("ends");
 
     if (!start_param || !ends_param) {
-      return crow::response(400, "Missing 'start' or 'ends' parameter");
+      return add_cors_headers(crow::response(400, "Missing 'start' or 'ends' parameter"));
     }
 
     NodeId start_id;
@@ -127,16 +127,16 @@ void Server::setup_routes() {
       }
     }
     catch (const std::exception& e) {
-      return crow::response(400, "Invalid 'start' or 'ends' parameter format");
+      return add_cors_headers(crow::response(400, "Invalid 'start' or 'ends' parameter format"));
     }
 
     // 检查节点是否存在
     if (map_.get_nodes().find(start_id) == map_.get_nodes().end()) {
-      return crow::response(400, "Invalid 'start' node ID");
+      return add_cors_headers(crow::response(400, "Invalid 'start' node ID"));
     }
     for (const auto& end_id : end_ids) {
       if (map_.get_nodes().find(end_id) == map_.get_nodes().end()) {
-        return crow::response(400, "Invalid 'end' node ID: " + std::to_string(end_id));
+        return add_cors_headers(crow::response(400, "Invalid 'end' node ID: " + std::to_string(end_id)));
       }
     }
 
@@ -167,7 +167,7 @@ void Server::setup_routes() {
     auto lon_param = req.url_params.get("lon");
 
     if (!lat_param || !lon_param) {
-      return crow::response(400, "Missing 'lat' or 'lon' parameter");
+      return add_cors_headers(crow::response(400, "Missing 'lat' or 'lon' parameter"));
     }
 
     double lat, lon;
@@ -176,12 +176,12 @@ void Server::setup_routes() {
       lon = std::stod(lon_param);
     }
     catch (const std::exception& e) {
-      return crow::response(400, "Invalid 'lat' or 'lon' parameter format");
+      return add_cors_headers(crow::response(400, "Invalid 'lat' or 'lon' parameter format"));
     }
 
     NodeId nearest_id = map_.nearest_point(lat, lon);
     if (nearest_id == -1) {
-      return crow::response(404, "No nearest point found");
+      return add_cors_headers(crow::response(404, "No nearest point found"));
     }
 
     json j;
@@ -196,14 +196,14 @@ void Server::setup_routes() {
     auto query_param = req.url_params.get("query");
 
     if (!query_param) {
-      return crow::response(400, "Missing 'query' parameter");
+      return add_cors_headers(crow::response(400, "Missing 'query' parameter"));
     }
 
     std::string query = query_param;
     auto [lat, lon] = map_.search_location(query);
 
     if (lat == 0.0 && lon == 0.0) {
-      return crow::response(404, "No matching location found");
+      return add_cors_headers(crow::response(404, "No matching location found"));
     }
 
     nlohmann::json j;
