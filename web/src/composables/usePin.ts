@@ -3,7 +3,7 @@ import L from "leaflet";
 import { MaybeRefOrGetter, ref, toValue, watchEffect } from "vue";
 import focusedIcon from "../assets/marker-focused.png?url";
 import normalIcon from "../assets/marker.png?url";
-import { map, onMapMounted } from "../map";
+import { useMap } from "./useMap";
 
 const iconScale = 0.5;
 const iconOptions = {
@@ -24,18 +24,18 @@ const iconFocused = L.icon({
 const focusedCoord = ref<string>();
 
 export function usePin(coord: MaybeRefOrGetter<L.LatLngExpression>) {
+  const { map } = useMap();
+
   const pin = L.marker(toValue(coord));
 
-  onMapMounted((map) => {
-    pin.addTo(map);
-  });
+  pin.addTo(map);
 
   watchEffect(() => {
     pin.setLatLng(toValue(coord));
   })
 
   function focus() {
-    map.value?.flyTo(toValue(coord), 18);
+    map.flyTo(toValue(coord), 18);
     focusedCoord.value = toValue(coord).toString();
   }
 
@@ -47,9 +47,8 @@ export function usePin(coord: MaybeRefOrGetter<L.LatLngExpression>) {
   })
 
   function remove() {
-    map.value && pin.removeFrom(map.value);
+    pin.removeFrom(map);
     pin.remove();
-    console.log('remove')
   }
 
   tryOnScopeDispose(remove)
