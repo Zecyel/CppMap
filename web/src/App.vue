@@ -8,6 +8,7 @@ import { useMap } from './composables/useMap';
 import { usePath } from './composables/usePath';
 import { computeDays } from './logic/computeDays';
 import { computeOptions, Options } from './logic/computeOptions';
+import { asyncComputed } from '@vueuse/core';
 
 onMounted(() => {
   const { map } = useMap();
@@ -21,6 +22,7 @@ const promptDialog = ref(false)
 const computing = ref(false)
 const canceled = ref(false)
 const options = ref<Options>()
+const hotels = ref<number[]>([])
 const chosenIndexes = ref<number[]>([])
 const chosen = computed(() => chosenIndexes.value.map(i => options.value![i]))
 const days = computed(() => computeDays(chosen.value, dayNum.value))
@@ -28,14 +30,87 @@ const days = computed(() => computeDays(chosen.value, dayNum.value))
 const activeDay = ref(0)
 usePath(() => days.value?.[activeDay.value]?.map(({ coord }) => coord))
 
+const optionsNodeId = asyncComputed(async () => {
+  if (!options.value) return []
+  return await Promise.all(
+    options.value.map(async (option: any) => {
+      return (await (await fetch(`http://localhost:18080/nearest_point?lat=${option.coord[0]}&lon=${option.coord[1]}`)).json())["nearest_point"]
+    })
+  )
+})
+
+// const shortestPaths = asyncComputed(async () => {
+//   if (!optionsNodeId.value || !hotels.value.length) return {}
+//   const paths: Record<number, { path: any[], distance: number }> = {}
+//   for (const optionNodeId of optionsNodeId.value) {
+//     paths[optionNodeId] = {}
+//     for (const hotelNodeId of hotels.value) {
+//       const response = await fetch(`http://localhost:18080/shortest_path?start=${optionNodeId}&end=${hotelNodeId}`)
+//       if (response.status === 404) {
+//         paths[optionNodeId][hotelNodeId] = { path: [], distance: Number.MAX_SAFE_INTEGER }
+//       } else {
+//         const data = await response.json()
+//         paths[optionNodeId][hotelNodeId] = { path: data.path, distance: calculateDistance(data.path) }
+//       }
+//     }
+//   }
+//   console.log('Shortest paths to hotels:', paths)
+//   return paths
+// })
+
+const optionToOptionPaths = asyncComputed(async () => {
+  if (!optionsNodeId.value || optionsNodeId.value.length < 2) return {}
+  const paths: Record<number, Record<number, { path: any[], distance: number }>> = {}
+  for (const [i, startNodeId] of optionsNodeId.value.entries()) {
+    paths[startNodeId] = {}
+    for (const endNodeId of optionsNodeId.value.slice(i + 1)) {
+      const response = await fetch(`http://localhost:18080/shortest_path?start=${startNodeId}&end=${endNodeId}`)
+      if (response.status === 404) {
+        paths[startNodeId][endNodeId] = { path: [], distance: Number.MAX_SAFE_INTEGER }
+      } else {
+        const data = await response.json()
+        paths[startNodeId][endNodeId] = { path: data.path, distance: calculateDistance(data.path) }
+      }
+    }
+  }
+  console.log('Shortest paths between options:', paths)
+  return paths
+})
+
+function calculateDistance(path: any[]): number {
+  let distance = 0
+  for (let i = 1; i < path.length; i++) {
+    const [lat1, lon1] = [path[i-1].lat, path[i-1].lon]
+    const [lat2, lon2] = [path[i].lat, path[i].lon]
+    distance += haversineDistance(lat1, lon1, lat2, lon2)
+  }
+  return distance
+}
+
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371 // Radius of the Earth in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
 async function run() {
   computing.value = true
   canceled.value = false
-  const result = await computeOptions(city.value, dayNum.value, prompt.value)
-  computing.value = false
+  const result = await computeOptions(city.value, prompt.value)
+  hotels.value = (await (await fetch(`http://localhost:18080/hotels`)).json())["hotel_nodes"]
+  
   if (!canceled.value) {
     options.value = result
+    // await shortestPaths.value
+    await optionToOptionPaths.value
   }
+
+  computing.value = false
   canceled.value = false
 }
 
