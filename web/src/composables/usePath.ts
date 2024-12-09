@@ -1,9 +1,11 @@
 import { computed, MaybeRefOrGetter, toValue, watch } from "vue";
-import { map, onMapMounted } from "../map";
 import L from "leaflet";
 import { tryOnScopeDispose } from "@vueuse/core";
+import { useMap } from "./useMap";
 
 export function usePath(path: MaybeRefOrGetter<L.LatLngExpression[] | null | undefined>) {
+  const { map } = useMap();
+
   const normalized = computed<L.LatLngExpression[]>(() => {
     const value = toValue(path);
     return value?.length && value?.length >= 2 ? value : [[0, 0]];
@@ -14,15 +16,13 @@ export function usePath(path: MaybeRefOrGetter<L.LatLngExpression[] | null | und
     stroke: true,
   })
 
-  onMapMounted((map) => {
-    polyline.addTo(map);
-  })
+  polyline.addTo(map);
 
   watch(normalized, (path) => {
     polyline.setLatLngs(path);
     if (path.length > 1) {
       setTimeout(() => {
-        map.value?.fitBounds(polyline.getBounds().pad(0.1));
+        map.fitBounds(polyline.getBounds().pad(0.1));
       }, 30)
     }
   })
