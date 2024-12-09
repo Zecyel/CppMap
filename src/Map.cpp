@@ -35,6 +35,7 @@ bool Map::load_osm(const std::string& filename) {
         // 默认等级
         Utils::HighwayLevel h_level = Utils::HighwayLevel::Unknown;
 
+        std::string name;
         // 解析标签
         for (auto tag : n.select_nodes("tag")) {
             auto t = tag.node();
@@ -44,6 +45,9 @@ bool Map::load_osm(const std::string& filename) {
             if (key == "highway") {
                 h_level = Utils::parse_highway_level(value);
             }
+            if (key == "name") {
+                name = value;
+            }
         }
 
         nodes_[id] = Node{ id, lat, lon, h_level };
@@ -51,6 +55,10 @@ bool Map::load_osm(const std::string& filename) {
         // 插入四叉树
         QuadNodeData data{ id, lat, lon, h_level };
         quadtree_->insert(data);
+
+        if (!name.empty()) {
+            named_nodes_.emplace_back(name, nodes_[id]);
+        }
     }
 
     // 解析道路（ways）
@@ -216,4 +224,30 @@ std::vector<Node> Map::query_region(double min_lat, double min_lon, double max_l
 
 NodeId Map::nearest_point(double lat, double lon) const {
     return quadtree_->nearest_point(lat, lon);
+}
+
+std::pair<double, double> Map::search_location(const std::string& query) const {
+    size_t max_match_length = 0;
+    const Node* best_match = nullptr;
+
+    for (const auto& [name, node] : named_nodes_) {
+        size_t match_length = 0;
+        for (size_t i = 0; i < std::min(name.size(), query.size()); ++i) {
+            if (name[i] == query[i]) {
+                ++match_length;
+            } else {
+                break;
+            }
+        }
+        if (match_length > max_match_length) {
+            max_match_length = match_length;
+            best_match = &node;
+        }
+    }
+
+    if (best_match) {
+        return {best_match->lat, best_match->lon};
+    } else {
+        return {0.0, 0.0}; // or some indication of no match found
+    }
 }

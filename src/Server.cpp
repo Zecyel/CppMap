@@ -188,6 +188,29 @@ void Server::setup_routes() {
     j["nearest_point"] = nearest_id;
     return add_cors_headers(Utils::json_to_response(j));
   });
+
+  // 路由：搜索位置
+  CROW_ROUTE(app_, "/search_location")
+  .methods(crow::HTTPMethod::GET)
+  ([this](const crow::request& req) -> crow::response {
+    auto query_param = req.url_params.get("query");
+
+    if (!query_param) {
+      return crow::response(400, "Missing 'query' parameter");
+    }
+
+    std::string query = query_param;
+    auto [lat, lon] = map_.search_location(query);
+
+    if (lat == 0.0 && lon == 0.0) {
+      return crow::response(404, "No matching location found");
+    }
+
+    nlohmann::json j;
+    j["lat"] = lat;
+    j["lon"] = lon;
+    return add_cors_headers(Utils::json_to_response(j));
+  });
 }
 
 void Server::run(int port, bool multithreaded) {

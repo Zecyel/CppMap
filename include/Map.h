@@ -46,9 +46,14 @@ public:
   std::vector<Node> query_region(double min_lat, double min_lon, double max_lat, double max_lon, Utils::HighwayLevel min_level = Utils::HighwayLevel::Unknown);
 
   NodeId nearest_point(double lat, double lon) const;
+
+  std::pair<double, double> search_location(const std::string& query) const;
+
 private:
   std::unordered_map<NodeId, Node> nodes_;
   std::unordered_map<NodeId, std::vector<Edge>> adj_;
 
   std::unique_ptr<Quadtree> quadtree_;
+
+  std::vector<std::pair<std::string, Node>> named_nodes_;
 };
