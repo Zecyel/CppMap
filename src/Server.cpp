@@ -211,6 +211,15 @@ void Server::setup_routes() {
     j["lon"] = lon;
     return add_cors_headers(Utils::json_to_response(j));
   });
+
+  // 路由：获取酒店节点
+  CROW_ROUTE(app_, "/hotels")
+  ([this]() -> crow::response {
+    auto hotel_nodes = map_.get_hotel_nodes();
+    nlohmann::json j;
+    j["hotel_nodes"] = hotel_nodes;
+    return add_cors_headers(Utils::json_to_response(j));
+  });
 }
 
 void Server::run(int port, bool multithreaded) {

@@ -48,6 +48,9 @@ bool Map::load_osm(const std::string& filename) {
             if (key == "name") {
                 name = value;
             }
+            if (key == "tourism" && value == "hotel") {
+                hotel_nodes_.push_back(id);
+            }
         }
 
         nodes_[id] = Node{ id, lat, lon, h_level };
@@ -250,4 +253,8 @@ std::pair<double, double> Map::search_location(const std::string& query) const {
     } else {
         return {0.0, 0.0}; // or some indication of no match found
     }
+}
+
+std::vector<NodeId> Map::get_hotel_nodes() const {
+    return hotel_nodes_;
 }

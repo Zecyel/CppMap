@@ -49,6 +49,8 @@ public:
 
   std::pair<double, double> search_location(const std::string& query) const;
 
+  std::vector<NodeId> get_hotel_nodes() const;
+
 private:
   std::unordered_map<NodeId, Node> nodes_;
   std::unordered_map<NodeId, std::vector<Edge>> adj_;
@@ -56,4 +58,6 @@ private:
   std::unique_ptr<Quadtree> quadtree_;
 
   std::vector<std::pair<std::string, Node>> named_nodes_;
+
+  std::vector<NodeId> hotel_nodes_;
 };
