@@ -5,7 +5,7 @@ import { onScopeDispose } from "vue";
 import 'leaflet/dist/leaflet.css';
 
 const officialTile = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const myTile = window.location.origin + import.meta.env.BASE_URL + '{z}/{x}/{y}.png';
+const myTile = window.location.origin + import.meta.env.BASE_URL + 'tile/{z}/{x}/{y}.png';
 
 export const useMap = createSharedComposable(() => {
   const container = document.getElementById('map')!;
