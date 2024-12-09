@@ -1,6 +1,6 @@
 import { Location } from "../components/LocationShow.vue"
 
-export async function computeOptions(city: string, days: number, isRelax: boolean) {
+export async function computeOptions(city: string, days: number, prompt: string | number) {
   await new Promise(resolve => setTimeout(resolve, 1000))
   return [
     {

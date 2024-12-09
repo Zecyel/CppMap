@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import 'leaflet/dist/leaflet.css'
-import { computed, onMounted, ref, watch, watchEffect } from 'vue';
+import { computed, onMounted, ref, Teleport, watch } from 'vue';
+import LocationShow from './components/LocationShow.vue';
+import MultiSelect from './components/MultiSelect.vue';
 import Routes from './components/Routes.vue';
 import Tabs from './components/Tabs.vue';
-import MultiSelect from './components/MultiSelect.vue';
-import LocationShow, { Location } from './components/LocationShow.vue';
-import { usePath } from './composables/usePath';
-import { computeOptions, Options } from './logic/computeOptions';
-import { computeDays } from './logic/computeDays';
 import { useMap } from './composables/useMap';
+import { usePath } from './composables/usePath';
+import { computeDays } from './logic/computeDays';
+import { computeOptions, Options } from './logic/computeOptions';
 
 onMounted(() => {
   const { map } = useMap();
@@ -17,7 +16,8 @@ onMounted(() => {
 
 const city = ref('')
 const dayNum = ref(3)
-const isRelax = ref(true)
+const prompt = ref<string | number>(1)
+const promptDialog = ref(false)
 const computing = ref(false)
 const canceled = ref(false)
 const options = ref<Options>()
@@ -31,7 +31,7 @@ usePath(() => days.value?.[activeDay.value]?.map(({ coord }) => coord))
 async function run() {
   computing.value = true
   canceled.value = false
-  const result = await computeOptions(city.value, dayNum.value, isRelax.value)
+  const result = await computeOptions(city.value, dayNum.value, prompt.value)
   computing.value = false
   if (!canceled.value) {
     options.value = result
@@ -45,7 +45,7 @@ function reset() {
   canceled.value = true
 }
 
-watch([city, dayNum, isRelax], reset)
+watch([city, dayNum, prompt], reset)
 </script>
 
 <template>
@@ -65,24 +65,26 @@ watch([city, dayNum, isRelax], reset)
       <div flex mb-1>
         <label flex-grow flex gap-3 items-center pl-2>
           <div i-carbon-building text-lg />
-          <input v-model="city" type="text" placeholder="Search city..." flex-grow py-2 bg-transparent w-10 />
+          <input v-model="city" type="text" placeholder="Search city..." flex-grow py-2 bg-transparent w-16 />
         </label>
         <label flex-grow flex gap-3 items-center pl-2>
           <div i-carbon-window-overlay text-lg op-80 />
-          <input v-model="dayNum" type="number" placeholder="Days" flex-grow py-2 bg-transparent w-0 />
+          <input v-model="dayNum" type="number" placeholder="Days" flex-grow py-2 bg-transparent w-0 step="1" min="1" max="9" />
         </label>
-        <label flex-grow flex gap-2 items-center>
-          <div flex-grow grid grid-cols-2 w-10 h-full>
-            <div class="kind-button" :data-active="isRelax" @click="isRelax = true">
-              <div i-carbon-umbrella />
-              Relax
-            </div>
-            <div class="kind-button" :data-active="!isRelax" @click="isRelax = false">
-              <div i-carbon-running />
-              Fulfill
-            </div>
+        <div grid grid-cols-3 min-h-max>
+          <div class="kind-button" :data-active="prompt === 1" @click="prompt = 1">
+            <div i-carbon-umbrella />
+            Relax
           </div>
-        </label>
+          <div class="kind-button" :data-active="prompt === 2" @click="prompt = 2">
+            <div i-carbon-running />
+            Fulfill
+          </div>
+          <div class="kind-button" :data-active="typeof prompt === 'string'" @click="promptDialog = true; typeof prompt === 'string' || (prompt = '')">
+            <div i-carbon-add-comment />
+            Custom
+          </div>
+        </div>
       </div>
       <button v-if="!computing && !options" @click="run" w-full text-center py-2 text-lg bg-gray-100>
         Run!
@@ -126,14 +128,24 @@ watch([city, dayNum, isRelax], reset)
         </div>
       </div>
     </template>
-
+    <Teleport v-if="promptDialog" to="body">
+      <div fixed inset-0 z-100 backdrop-blur-.4 bg-gray-800 bg-op-40 flex items-center justify-center @click="promptDialog = false">
+        <div relative w-200 max-w-full bg-white p-4 flex flex-col gap-4 rounded @click.stop="">
+          <button absolute right-4 top-4 w-10 h-10 flex items-center justify-center rounded class="p0!" @click="promptDialog = false">
+            <div i-carbon-checkmark text-2xl />
+          </button>
+          <div text-2xl pt-1> Custom Prompt </div>
+          <textarea v-model="prompt" placeholder="Any additional information for AI?" w-full resize-none bg-gray-100 focus:bg-gray-200 p-2 rounded h-80 />
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <style scoped>
 .kind-button {
-  @apply relative flex items-end justify-end min-w-max uppercase text-black/80;
-  @apply tracking-tight select-none text-right px-1 hover:bg-gray-200 h-full;
+  @apply relative flex items-end justify-end w-18 uppercase text-black/70;
+  @apply tracking--0.2 select-none text-right px-1 hover:bg-gray-200 h-full;
 }
 
 .kind-button[data-active="true"] {
@@ -141,6 +153,6 @@ watch([city, dayNum, isRelax], reset)
 }
 
 .kind-button>div {
-  @apply absolute left-1 top-1 text-2xl op-50;
+  @apply absolute left-.5 top-.5 text-2xl op-35;
 }
 </style>
