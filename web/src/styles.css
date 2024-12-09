@@ -35,3 +35,7 @@ label:has(input:focus) {
 html button {
   @apply px-2 py-1 hover:bg-gray-200 active:bg-gray-300 text-black;
 }
+
+* {
+  scrollbar-width: thin;
+}

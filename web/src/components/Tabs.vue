@@ -32,7 +32,7 @@ function onWheel(event: WheelEvent) {
         {{ name }} {{ i }}
       </div>
     </div>
-    <div>
+    <div flex-grow h-0 of-y-auto>
       <slot />
     </div>
   </div>

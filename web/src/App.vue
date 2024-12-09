@@ -50,15 +50,15 @@ watch([city, dayNum, prompt], reset)
 </script>
 
 <template>
-  <div w-120 p-4 flex flex-col gap-4>
-    <div flex relative font-serif>
+  <div w-120 h-full pl-4 pt-4 flex flex-col gap-4>
+    <div flex relative font-serif mr-4>
       <h1 text-3xl> Travel Planner </h1>
       <div absolute bottom-0 right-2 text-sm gray-200 op-80>
         by Zecyel
       </div>
     </div>
 
-    <div>
+    <div mr-4>
       <h2 text-xl flex gap-2 items-center op-90 tracking-wide>
         <div i-carbon-settings-adjust />
         基础设置
@@ -104,23 +104,23 @@ watch([city, dayNum, prompt], reset)
       </div>
     </div>
     <template v-if="options">
-      <div>
+      <div flex flex-col flex-grow>
         <h2 text-xl flex gap-2 items-center op-90 tracking-wide>
           <div i-carbon-list-checked />
           景点选择
         </h2>
 
-        <MultiSelect :num="options.length" v-model="chosenIndexes" v-slot="{ index }">
+        <MultiSelect :num="options.length" v-model="chosenIndexes" v-slot="{ index }" flex-grow h-0>
           <LocationShow :location="options[index]" hover:bg-gray-200 active:bg-gray-300 px-2 py-1 flex-grow show-pin />
         </MultiSelect>
       </div>
 
-      <div>
+      <div h-32 flex flex-col flex-grow>
         <h2 text-xl flex gap-2 items-center op-90 tracking-wide mb-1>
           <div i-carbon-calendar />
           行程安排
         </h2>
-        <Tabs v-if="chosen.length" name="Day" v-model="activeDay" :num="days.length">
+        <Tabs v-if="chosen.length" name="Day" v-model="activeDay" :num="days.length" h-full>
           <Routes v-for="day, i in days" :key="i" v-show="i === activeDay" :locations="day" />
         </Tabs>
         <div v-else>
