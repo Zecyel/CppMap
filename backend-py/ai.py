@@ -15,6 +15,9 @@ client = OpenAI(
 def ai_home():
     return jsonify({'message': 'Welcome to the AI blueprint'})
 
+ret = {}
+UseCache = True
+
 @ai.route('/attractions', methods=['GET'])
 def get_attractions():
     place_name = request.args.get('place')
@@ -23,21 +26,25 @@ def get_attractions():
 
     # 创建提示
     prompt = ("""
-请列出 %s 的景点，包括景点名称和游玩所需时长，以JSON格式返回。其中duration的单位是小时。参考格式如下：
+请列出 %s 的景点，包括景点名称、游玩所需时长和景点简介，以JSON格式返回。其中duration的单位是小时。参考格式如下：
 ```json
 [
     \{
         "name": "景点1",
-        "duration": 1
+        "duration": 1,
+        "description": "景点的简介1"
     },\{
         "name": "景点2",
-        "duration": 0.5
+        "duration": 0.5,
+        "description": "景点的简介1"
     },
     
 ]
 ```
 """ % place_name).strip()
 
+    global ret
+    if ret != {} and UseCache: return ret
     # 调用 OpenAI 的 API
     response = client.chat.completions.create(
         model='gpt-4o',
@@ -63,4 +70,5 @@ def get_attractions():
     except json.JSONDecodeError:
         attractions = {'attractions': attractions_text}
 
-    return jsonify(attractions)
+    ret = jsonify(attractions)
+    return ret
