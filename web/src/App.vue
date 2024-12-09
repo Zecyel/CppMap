@@ -50,9 +50,9 @@ watch([city, dayNum, prompt], reset)
 
 <template>
   <div w-120 p-4 flex flex-col gap-4>
-    <div px-1 flex relative>
-      <h1 text-3xl> Map </h1>
-      <div absolute bottom-0 right-2 text-sm gray-200 op-80 font-serif>
+    <div flex relative font-serif>
+      <h1 text-3xl> Travel Planner </h1>
+      <div absolute bottom-0 right-2 text-sm gray-200 op-80>
         by Zecyel
       </div>
     </div>
@@ -64,11 +64,11 @@ watch([city, dayNum, prompt], reset)
       </h2>
       <div flex mb-1>
         <label flex-grow flex gap-3 items-center pl-2>
-          <div i-carbon-building text-lg />
+          <div i-carbon-building text-lg op-80 />
           <input v-model="city" type="text" placeholder="Search city..." flex-grow py-2 bg-transparent w-16 />
         </label>
         <label flex-grow flex gap-3 items-center pl-2>
-          <div i-carbon-window-overlay text-lg op-80 />
+          <div i-carbon-window-overlay text-lg op-60 />
           <input v-model="dayNum" type="number" placeholder="Days" flex-grow py-2 bg-transparent w-0 step="1" min="1" max="9" />
         </label>
         <div grid grid-cols-3 min-h-max>
@@ -115,7 +115,7 @@ watch([city, dayNum, prompt], reset)
       </div>
 
       <div>
-        <h2 text-xl flex gap-2 items-center op-90 tracking-wide>
+        <h2 text-xl flex gap-2 items-center op-90 tracking-wide mb-1>
           <div i-carbon-calendar />
           行程安排
         </h2>
