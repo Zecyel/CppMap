@@ -9,7 +9,7 @@ export const map = ref<L.Map>();
 const onMapMountedCbs: ((map: L.Map) => void)[] = [];
 
 export function mountMap(el: HTMLElement) {
-  const _map = map.value = L.map(el).setView([31.3, 121.5], 13);
+  const _map = map.value = L.map(el).setView([25.3, 105.5], 13);
   L.tileLayer(myTile, {
     minZoom: 5,
     maxZoom: 18,
