@@ -55,10 +55,6 @@ bool Map::load_osm(const std::string& filename) {
 
         nodes_[id] = Node{ id, lat, lon, h_level };
 
-        // 插入四叉树
-        QuadNodeData data{ id, lat, lon, h_level };
-        quadtree_->insert(data);
-
         if (!name.empty()) {
             named_nodes_.emplace_back(name, nodes_[id]);
         }
@@ -87,6 +83,12 @@ bool Map::load_osm(const std::string& filename) {
             );
             adj_[from].emplace_back(Edge{ to, distance });
             adj_[to].emplace_back(Edge{ from, distance });
+
+            // 插入四叉树
+            QuadNodeData data_from{ from, nodes_[from].lat, nodes_[from].lon, nodes_[from].highway_level };
+            QuadNodeData data_to{ to, nodes_[to].lat, nodes_[to].lon, nodes_[to].highway_level };
+            quadtree_->insert(data_from);
+            quadtree_->insert(data_to);
         }
     }
 
@@ -235,7 +237,7 @@ std::pair<double, double> Map::search_location(const std::string& query) const {
 
     for (const auto& [name, node] : named_nodes_) {
         size_t match_length = 0;
-        for (size_t i = 0; i < std::min(name.size(), query.size()); ++i) {
+        for (size_t i = 0; std::min(name.size(), query.size()); ++i) {
             if (name[i] == query[i]) {
                 ++match_length;
             } else {
