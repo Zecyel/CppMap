@@ -86,20 +86,21 @@ watch([city, dayNum, prompt], reset)
           </div>
         </div>
       </div>
-      <button v-if="!computing && !options" @click="run" w-full text-center py-2 text-lg bg-gray-100>
-        Run!
-      </button>
-      <template v-if="computing">
-        <div relative w-full text-center py-1 text-lg bg-gray-100 flex gap-2 items-center justify-center>
+      <div v-if="!options" w-full h-12 text-center text-lg bg-gray-100 select-none>
+        <div v-if="computing" relative h-full w-full text-center flex gap-2 items-center justify-center>
           <div i-svg-spinners-90-ring-with-bg op-60 />
           <div op-60> Computing... </div>
-          <div absolute inset-0 flex items-center justify-end class="group">
-            <button op-40 group-hover:op-80 hover:op-100 h-full @click="reset">
-              <div i-carbon-close-large />
-            </button>
+          <div absolute inset-0 flex class="group">
+            <div flex-grow />
+            <div flex items-center justify-end op-40 group-hover:op-60 hover:op-100 px-4 h-full hover:bg-gray-200 @click="reset">
+              <div i-carbon-close-large text-xl />
+            </div>
           </div>
         </div>
-      </template>
+        <div v-else @click="run" text-lg h-full flex items-center justify-center>
+          Run!
+        </div>
+      </div>
     </div>
     <template v-if="options">
       <div>
