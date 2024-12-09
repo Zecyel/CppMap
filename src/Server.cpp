@@ -105,6 +105,60 @@ void Server::setup_routes() {
     return add_cors_headers(Utils::json_to_response(j));
   });
 
+  // 路由：计算从一个点到多个点的最短路径
+  CROW_ROUTE(app_, "/shortest_paths")
+  .methods(crow::HTTPMethod::GET)
+  ([this](const crow::request& req) -> crow::response {
+    auto start_param = req.url_params.get("start");
+    auto ends_param = req.url_params.get("ends");
+
+    if (!start_param || !ends_param) {
+      return crow::response(400, "Missing 'start' or 'ends' parameter");
+    }
+
+    NodeId start_id;
+    std::vector<NodeId> end_ids;
+    try {
+      start_id = std::stol(start_param);
+      std::stringstream ss(ends_param);
+      std::string item;
+      while (std::getline(ss, item, ',')) {
+        end_ids.push_back(std::stol(item));
+      }
+    }
+    catch (const std::exception& e) {
+      return crow::response(400, "Invalid 'start' or 'ends' parameter format");
+    }
+
+    // 检查节点是否存在
+    if (map_.get_nodes().find(start_id) == map_.get_nodes().end()) {
+      return crow::response(400, "Invalid 'start' node ID");
+    }
+    for (const auto& end_id : end_ids) {
+      if (map_.get_nodes().find(end_id) == map_.get_nodes().end()) {
+        return crow::response(400, "Invalid 'end' node ID: " + std::to_string(end_id));
+      }
+    }
+
+    // 计算最短路径
+    auto paths = map_.shortest_paths(start_id, end_ids);
+    json j;
+    for (const auto& [end_id, path] : paths) {
+      json path_json;
+      for (NodeId id : path) {
+        const auto& node = map_.get_nodes().at(id);
+        path_json.push_back({
+          {"id", id},
+          {"lat", node.lat},
+          {"lon", node.lon}
+        });
+      }
+      j["paths"][std::to_string(end_id)] = path_json;
+    }
+
+    return add_cors_headers(Utils::json_to_response(j));
+  });
+
   // 路由：查询最近的点
   CROW_ROUTE(app_, "/nearest_point")
   .methods(crow::HTTPMethod::GET)

@@ -33,6 +33,9 @@ public:
   // 计算两点之间的最短路径（Dijkstra算法）
   std::vector<NodeId> shortest_path(NodeId start_id, NodeId end_id);
 
+  // 计算起点到多个终点的最短路径
+  std::unordered_map<NodeId, std::vector<NodeId>> shortest_paths(NodeId start_id, const std::vector<NodeId>& end_ids);
+
   // 获取所有节点
   const std::unordered_map<NodeId, Node>& get_nodes() const;
 

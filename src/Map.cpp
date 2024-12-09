@@ -140,6 +140,53 @@ std::vector<NodeId> Map::shortest_path(NodeId start_id, NodeId end_id) {
     return path;
 }
 
+std::unordered_map<NodeId, std::vector<NodeId>> Map::shortest_paths(NodeId start_id, const std::vector<NodeId>& end_ids) {
+  std::unordered_map<NodeId, double> dist;
+  std::unordered_map<NodeId, NodeId> prev;
+  std::unordered_set<NodeId> end_set(end_ids.begin(), end_ids.end());
+
+  for (const auto& [id, node] : nodes_) {
+    dist[id] = std::numeric_limits<double>::infinity();
+  }
+  dist[start_id] = 0.0;
+
+  using PQElement = std::pair<double, NodeId>;
+  std::priority_queue<PQElement, std::vector<PQElement>, std::greater<PQElement>> pq;
+  pq.emplace(0.0, start_id);
+
+  while (!pq.empty()) {
+    auto [current_dist, current] = pq.top();
+    pq.pop();
+
+    if (end_set.find(current) != end_set.end()) {
+      end_set.erase(current);
+      if (end_set.empty()) break;
+    }
+
+    for (const auto& edge : adj_[current]) {
+      double new_dist = current_dist + edge.weight;
+      if (new_dist < dist[edge.to]) {
+        dist[edge.to] = new_dist;
+        prev[edge.to] = current;
+        pq.emplace(new_dist, edge.to);
+      }
+    }
+  }
+
+  std::unordered_map<NodeId, std::vector<NodeId>> paths;
+  for (const auto& end_id : end_ids) {
+    std::vector<NodeId> path;
+    for (NodeId at = end_id; at != start_id; at = prev[at]) {
+      path.emplace_back(at);
+    }
+    path.emplace_back(start_id);
+    std::reverse(path.begin(), path.end());
+    paths[end_id] = path;
+  }
+
+  return paths;
+}
+
 // 获取所有节点
 const std::unordered_map<NodeId, Node>& Map::get_nodes() const {
     return nodes_;

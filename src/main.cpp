@@ -5,7 +5,7 @@
 int main() {
   // 创建地图实例并加载OSM文件
   Map map;
-  if (!map.load_osm("../data/shanghai.osm")) {
+  if (!map.load_osm("../data/guizhou.osm")) {
     std::cerr << "Failed to load OSM data." << std::endl;
     return 1;
   }
