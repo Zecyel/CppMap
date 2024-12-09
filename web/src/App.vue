@@ -43,6 +43,7 @@ function reset() {
   options.value = undefined
   computing.value = false
   canceled.value = true
+  chosenIndexes.value = []
 }
 
 watch([city, dayNum, prompt], reset)
