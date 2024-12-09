@@ -15,6 +15,13 @@ onMounted(() => {
   map.invalidateSize()
 })
 
+type Hotel = {
+  hotel_id: number,
+  lat: number,
+  lon: number,
+  nearest_road_node_id: number
+}
+
 const city = ref('')
 const dayNum = ref(3)
 const prompt = ref<string | number>(1)
@@ -22,7 +29,7 @@ const promptDialog = ref(false)
 const computing = ref(false)
 const canceled = ref(false)
 const options = ref<Options>()
-const hotels = ref<number[]>([])
+const hotels = ref<Hotel[]>([])
 const chosenIndexes = ref<number[]>([])
 const chosen = computed(() => chosenIndexes.value.map(i => options.value![i]))
 const days = computed(() => computeDays(chosen.value, dayNum.value))
@@ -39,26 +46,9 @@ const optionsNodeId = asyncComputed(async () => {
   )
 })
 
-// const shortestPaths = asyncComputed(async () => {
-//   if (!optionsNodeId.value || !hotels.value.length) return {}
-//   const paths: Record<number, { path: any[], distance: number }> = {}
-//   for (const optionNodeId of optionsNodeId.value) {
-//     paths[optionNodeId] = {}
-//     for (const hotelNodeId of hotels.value) {
-//       const response = await fetch(`http://localhost:18080/shortest_path?start=${optionNodeId}&end=${hotelNodeId}`)
-//       if (response.status === 404) {
-//         paths[optionNodeId][hotelNodeId] = { path: [], distance: Number.MAX_SAFE_INTEGER }
-//       } else {
-//         const data = await response.json()
-//         paths[optionNodeId][hotelNodeId] = { path: data.path, distance: calculateDistance(data.path) }
-//       }
-//     }
-//   }
-//   console.log('Shortest paths to hotels:', paths)
-//   return paths
-// })
-
 const optionToOptionPaths = asyncComputed(async () => {
+  // i don't know why ai name the function like this
+  // it calcs the distance between attractions
   if (!optionsNodeId.value || optionsNodeId.value.length < 2) return {}
   const paths: Record<number, Record<number, { path: any[], distance: number }>> = {}
   for (const [i, startNodeId] of optionsNodeId.value.entries()) {
@@ -106,7 +96,6 @@ async function run() {
   
   if (!canceled.value) {
     options.value = result
-    // await shortestPaths.value
     await optionToOptionPaths.value
   }
 
