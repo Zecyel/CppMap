@@ -11,6 +11,10 @@ input[type="text"] {
   @apply outline-none;
 }
 
+input[type="text"]::placeholder {
+  @apply text-gray-600;
+}
+
 label:has(input:focus) {
   @apply bg-gray-200;
 }
@@ -18,4 +22,8 @@ label:has(input:focus) {
 .active-pin {
   @apply text-red;
   color: red;
+}
+
+#app button {
+  @apply px-2 py-1 hover:bg-gray-200 active:bg-gray-300;
 }

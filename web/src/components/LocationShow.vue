@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { watchEffect } from 'vue'
 import { usePin } from '../composables/usePin'
-import { onMapMounted } from '../map'
 
 export interface Location {
   name: string
@@ -13,21 +11,10 @@ export interface Location {
 
 const props = defineProps<{
   location: Location
+  showPin?: boolean
 }>()
 
-const { pin, focus } = usePin(() => props.location.coord)
-
-onMapMounted(() => {
-  watchEffect(() => {
-    pin.setPopupContent(`
-      <div>
-        <div class="text-lg"> ${props.location.name} </div>
-        <div class="op-80 leading-tight"> ${props.location.description} </div>
-      </div>
-    `)
-    pin.togglePopup()
-  })
-})
+const { focus } = props.showPin ? usePin(() => props.location.coord) : { focus: () => {} }
 </script>
 
 <template>

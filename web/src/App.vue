@@ -7,6 +7,8 @@ import MultiSelect from './components/MultiSelect.vue';
 import LocationShow, { Location } from './components/LocationShow.vue';
 import { mountMap } from './map';
 import { usePath } from './composables/usePath';
+import { computeOptions, Options } from './logic/computeOptions';
+import { computeDays } from './logic/computeDays';
 
 const mapEl = ref<HTMLElement | null>(null);
 
@@ -14,56 +16,18 @@ onMounted(() => {
   mountMap(mapEl.value!)
 })
 
-const days = [[
-  {
-    name: 'Shanghai',
-    description: 'Some description, may be quite long......',
-    coord: [31.3, 121.5],
-    distance: '10km',
-    time: '10:00',
-  },
-], [
-  {
-    name: 'Shanghai',
-    description: 'Some description, may be quite long......',
-    coord: [31.301, 121.501],
-    distance: '10km',
-    time: '10:00',
-  },
-  {
-    name: 'Shanghai',
-    description: 'Some description, may be quite long......',
-    coord: [31.302, 121.502],
-    distance: '10km',
-    time: '10:00',
-  },
-], [
-  {
-    name: 'Shanghai',
-    description: 'Some description, may be quite long......',
-    coord: [31.301, 121.503],
-    distance: '10km',
-    time: '10:00',
-  },
-  {
-    name: 'Shanghai',
-    description: 'Some description, may be quite long......',
-    coord: [31.304, 121.504],
-    distance: '10km',
-    time: '10:00',
-  },
-  {
-    name: 'Shanghai',
-    description: 'Some description, may be quite long......',
-    coord: [31.305, 121.505],
-    distance: '10km',
-    time: '10:00',
-  },
-]] satisfies Location[][]
+const city = ref('')
+const options = ref<Options>()
+const chosenIndexes = ref<number[]>([])
+const chosen = computed(() => chosenIndexes.value.map(i => options.value![i]))
+const days = computed(() => computeDays(chosen.value))
 
-const chosen = ref<number[]>([])
 const activeDay = ref(0)
-usePath(() => days[activeDay.value].map(({ coord }) => coord))
+usePath(() => days.value?.[activeDay.value]?.map(({ coord }) => coord))
+
+async function run() {
+  options.value = await computeOptions(city.value)
+}
 </script>
 
 <template>
@@ -77,19 +41,52 @@ usePath(() => days[activeDay.value].map(({ coord }) => coord))
       </div>
 
       <div>
-        <label flex gap-2 items-center pl-2>
-          <div i-carbon-search text-lg />
-          <input type="text" placeholder="Search..." flex-grow py-2 bg-transparent />
-        </label>
-
-        <MultiSelect :num="days[2].length" v-model="chosen" v-slot="{ index }">
-          <LocationShow :location="days[2][index]" hover:bg-gray-200 active:bg-gray-300 px-2 py-1 flex-grow />
-        </MultiSelect>
+        <h2 text-xl flex gap-2 items-center op-90 tracking-wide>
+          <div i-carbon-settings-adjust />
+          基础设置
+        </h2>
+        <div flex>
+          <label flex-grow flex gap-3 items-center pl-2>
+            <div i-carbon-building text-lg />
+            <input v-model="city" type="text" placeholder="Search city..." flex-grow py-2 bg-transparent />
+          </label>
+          <button @click="run">
+            Run!
+          </button>
+        </div>
       </div>
 
-      <Tabs name="Day" v-model="activeDay" :num="days.length">
-        <Routes v-for="day, i in days" :key="i" v-show="i === activeDay" :locations="day" />
-      </Tabs>
+      <template v-if="!options">
+
+      </template>
+      <template v-else>
+        <div>
+          <h2 text-xl flex gap-2 items-center op-90 tracking-wide>
+            <div i-carbon-list-checked />
+            景点选择
+          </h2>
+
+          <MultiSelect :num="options.length" v-model="chosenIndexes" v-slot="{ index }">
+            <LocationShow :location="options[index]" hover:bg-gray-200 active:bg-gray-300 px-2 py-1 flex-grow show-pin />
+          </MultiSelect>
+        </div>
+
+        <div>
+          <h2 text-xl flex gap-2 items-center op-90 tracking-wide>
+            <div i-carbon-calendar />
+            行程安排
+          </h2>
+          <Tabs v-if="chosen.length" name="Day" v-model="activeDay" :num="days.length">
+            <Routes v-for="day, i in days" :key="i" v-show="i === activeDay" :locations="day" />
+          </Tabs>
+          <div v-else>
+            <div text-center text-gray-500>
+              No locations selected
+            </div>
+          </div>
+        </div>
+      </template>
+
     </div>
     <div ref="mapEl" id="map" flex-grow />
   </div>
