@@ -93,7 +93,25 @@ bool Map::load_osm(const std::string& filename) {
     }
 
     std::cout << "加载了 " << nodes_.size() << " 个节点和 " << adj_.size() << " 条边。" << std::endl;
+    compute_hotel_data(); // Compute hotel data after loading OSM data
     return true;
+}
+
+void Map::compute_hotel_data() {
+    for (const auto& hotel_id : hotel_nodes_) {
+        const auto& hotel_node = nodes_.at(hotel_id);
+        NodeId nearest_road_node_id = nearest_point(hotel_node.lat, hotel_node.lon);
+        hotel_data_["hotel_nodes"].push_back({
+            {"hotel_id", hotel_id},
+            {"lat", hotel_node.lat},
+            {"lon", hotel_node.lon},
+            {"nearest_road_node_id", nearest_road_node_id}
+        });
+    }
+}
+
+const nlohmann::json& Map::get_hotel_data() const {
+    return hotel_data_;
 }
 
 // 实现 A* 算法计算最短路径
