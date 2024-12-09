@@ -114,13 +114,16 @@ const nlohmann::json& Map::get_hotel_data() const {
     return hotel_data_;
 }
 
-// 实现 A* 算法计算最短路径
+// 实现 Dijkstra 算法计算最短路径
 std::vector<NodeId> Map::shortest_path(NodeId start_id, NodeId end_id) {
     auto start_time = std::chrono::high_resolution_clock::now();  // 开始计时
 
     std::unordered_map<NodeId, double> g_score;
     std::unordered_map<NodeId, double> f_score;
     std::unordered_map<NodeId, NodeId> previous;
+
+    g_score.reserve(nodes_.size());
+    f_score.reserve(nodes_.size());
 
     for (const auto& [id, node] : nodes_) {
         g_score[id] = std::numeric_limits<double>::infinity();
@@ -133,9 +136,16 @@ std::vector<NodeId> Map::shortest_path(NodeId start_id, NodeId end_id) {
     std::priority_queue<PQElement, std::vector<PQElement>, std::greater<PQElement>> pq;
     pq.emplace(f_score[start_id], start_id);
 
+    std::unordered_set<NodeId> visited;
+
     while (!pq.empty()) {
         auto [current_f, current] = pq.top();
         pq.pop();
+
+        if (visited.find(current) != visited.end()) {
+            continue;
+        }
+        visited.insert(current);
 
         if (current == end_id) break;
 
