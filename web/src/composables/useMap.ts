@@ -9,7 +9,7 @@ const myTile = window.location.origin + import.meta.env.BASE_URL + '{z}/{x}/{y}.
 export const useMap = createSharedComposable(() => {
   const container = document.getElementById('map')!;
 
-  const map = L.map(container).setView([31.3, 121.5], 13);
+  const map = L.map(container).setView([25.3, 105.5], 13);
   L.tileLayer(myTile, {
     minZoom: 5,
     maxZoom: 18,
