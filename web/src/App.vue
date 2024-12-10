@@ -78,7 +78,7 @@ function reset() {
   chosenIndexes.value = []
 }
 
-watch([city, dayNum, prompt], reset)
+watch([city, prompt], reset)
 </script>
 
 <template>
