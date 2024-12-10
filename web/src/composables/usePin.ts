@@ -21,10 +21,9 @@ const iconFocused = L.icon({
   ...iconOptions,
 });
 
-const focusedCoord = ref<string>();
-
 export function usePin(coord: MaybeRefOrGetter<L.LatLngExpression>) {
-  const { map } = useMap();
+  const { map, focusedCoord, focus: _focus } = useMap();
+  const focus = () => _focus(toValue(coord));
 
   const pin = L.marker(toValue(coord));
 
@@ -33,11 +32,6 @@ export function usePin(coord: MaybeRefOrGetter<L.LatLngExpression>) {
   watchEffect(() => {
     pin.setLatLng(toValue(coord));
   })
-
-  function focus() {
-    map.flyTo(toValue(coord), 18);
-    focusedCoord.value = toValue(coord).toString();
-  }
 
   pin.addEventListener("click", focus)
 

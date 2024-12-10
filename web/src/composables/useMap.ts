@@ -1,7 +1,7 @@
 import { createSharedComposable } from "@vueuse/core";
 import L from "leaflet";
 import errorTileUrl from "../assets/fallback_tile.png?url";
-import { onScopeDispose } from "vue";
+import { onScopeDispose, ref } from "vue";
 import 'leaflet/dist/leaflet.css';
 
 const officialTile = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -22,7 +22,17 @@ export const useMap = createSharedComposable(() => {
     map.remove();
   })
 
+  const focusedCoord = ref<string>();
+
+  function focus(coord: L.LatLngExpression) {
+    map.flyTo(coord, 18);
+    focusedCoord.value = coord.toString();
+  }
+
   return {
     map,
+    focusedCoord,
+    focus,
   }
 })
+

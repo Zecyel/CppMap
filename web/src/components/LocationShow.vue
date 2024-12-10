@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMap } from '../composables/useMap';
 import { usePin } from '../composables/usePin'
 import type { Location } from '../types'
 
@@ -7,7 +8,9 @@ const props = defineProps<{
   showPin?: boolean
 }>()
 
-const { focus } = props.showPin ? usePin(() => props.location.coord) : { focus: () => {} }
+const { focus: _focus } = useMap()
+
+const { focus } = props.showPin ? usePin(() => props.location.coord) : { focus: () => _focus(props.location.coord) }
 </script>
 
 <template>
