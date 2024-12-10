@@ -30,10 +30,11 @@ export default async function computeOptions(city: string, prompt: string | numb
         const result = (await fetchJson(
             `http://localhost:18080/shortest_paths?start=${start.nearestNode}&ends=${ends.map(n => n.nearestNode).join(',')}`,
         )).paths
-        for (const [j, path] of result.entries()) {
+        for (const end of ends) {
+            const path = result[end.nearestNode]
             const normalizedPath = path.map(({ lat, lon }: any) => [lat, lon] as [number, number])
             const normalizedDistance = computePathLength(normalizedPath)
-            paths[start.nearestNode][ends[j].nearestNode] = { path: normalizedPath, distance: normalizedDistance }
+            paths[start.nearestNode][end.nearestNode] = { path: normalizedPath, distance: normalizedDistance }
         }
     }))
     console.log('Shortest paths between options:', paths)
