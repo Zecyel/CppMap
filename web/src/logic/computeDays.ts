@@ -42,7 +42,7 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
   console.log('perm', perm)
 
   const result = (await fetchJson(
-    `${MAP_BACKEND}/shortest_paths?start=${hotel.nearestNode}&ends=${chosen.map(n => n.nearestNode).join(',')}`,
+    `${MAP_BACKEND}/shortest_paths?start=${hotel.nearestNode}&ends=${chosen.map(n => n.nearestNode).sort().join(',')}`,
     { signal },
   )).paths
   for (const target of chosen) {
