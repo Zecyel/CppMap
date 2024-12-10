@@ -28,7 +28,7 @@ const chosen = computed(() => options.value ? chosenIndexes.value.map(i => optio
 const days = asyncComputed((onCancel) => {
   // Track deps
   void [options.value, chosen.value, dayNum.value]
-  if (options.value) {
+  if (options.value && chosen.value.length) {
     const abortController = new AbortController()
     onCancel(() => abortController.abort())
     return computeDays(options.value, chosen.value, dayNum.value, abortController.signal)
