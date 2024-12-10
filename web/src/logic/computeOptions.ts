@@ -24,7 +24,7 @@ export default async function computeOptions(city: string, prompt: string | numb
     }))
 
     const paths: Record<string, Record<string, { path: [number, number][], distance: number }>> = {}
-    for (const [i, start] of locations.entries()) {
+    await Promise.all(locations.entries().map(async ([i, start]) => {
         paths[start.nearestNode] = {}
         for (const end of locations.slice(i + 1)) {
             const { path, distance } = await fetchJson(
@@ -35,9 +35,8 @@ export default async function computeOptions(city: string, prompt: string | numb
             const normalizedDistance = distance ?? computePathLength(normalizedPath)
             paths[start.nearestNode][end.nearestNode] = { path: normalizedPath, distance: normalizedDistance }
         }
-    }
+    }))
     console.log('Shortest paths between options:', paths)
-
 
     const hotels: Hotel[] = (await fetchJson(`http://localhost:18080/hotels`)).hotel_nodes
 
