@@ -64,5 +64,6 @@ private:
 
   std::vector<NodeId> hotel_nodes_;
 
+  std::unordered_map<NodeId, std::string> hotel_names_; // Add this line
   nlohmann::json hotel_data_;
 };

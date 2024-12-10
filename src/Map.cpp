@@ -50,6 +50,7 @@ bool Map::load_osm(const std::string& filename) {
             }
             if (key == "tourism" && value == "hotel") {
                 hotel_nodes_.push_back(id);
+                hotel_names_[id] = name; // Store hotel name
             }
         }
 
@@ -92,6 +93,34 @@ bool Map::load_osm(const std::string& filename) {
         }
     }
 
+    // 解析建筑（ways）
+    for (auto way : doc.select_nodes("//way[tag[@k='tourism' and @v='hotel']]")) {
+        auto w = way.node();
+        std::string name;
+        NodeId hotel_id = -1;
+
+        // 获取所有节点引用
+        for (auto nd : w.select_nodes("nd")) {
+            hotel_id = nd.node().attribute("ref").as_llong();
+        }
+
+        // 获取酒店名称
+        for (auto tag : w.select_nodes("tag")) {
+            auto t = tag.node();
+            std::string key = t.attribute("k").as_string();
+            std::string value = t.attribute("v").as_string();
+
+            if (key == "name") {
+                name = value;
+            }
+        }
+
+        if (hotel_id != -1 && !name.empty()) {
+            hotel_nodes_.push_back(hotel_id);
+            hotel_names_[hotel_id] = name;
+        }
+    }
+
     std::cout << "加载了 " << nodes_.size() << " 个节点和 " << adj_.size() << " 条边。" << std::endl;
     compute_hotel_data(); // Compute hotel data after loading OSM data
     return true;
@@ -103,6 +132,7 @@ void Map::compute_hotel_data() {
         NodeId nearest_road_node_id = nearest_point(hotel_node.lat, hotel_node.lon);
         hotel_data_["hotel_nodes"].push_back({
             {"hotel_id", hotel_id},
+            {"name", hotel_names_[hotel_id]},
             {"lat", hotel_node.lat},
             {"lon", hotel_node.lon},
             {"nearest_road_node_id", nearest_road_node_id}
