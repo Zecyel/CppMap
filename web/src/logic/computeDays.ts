@@ -1,3 +1,4 @@
+import { MAP_BACKEND } from '../constants'
 import type { NodeId, Location } from '../types'
 import { Options } from './computeOptions'
 import { fetchJson } from './fetchJson'
@@ -28,7 +29,7 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
 
   const paths: Record<NodeId, { path: [number, number][], distance: number }> = {}
   const result = (await fetchJson(
-    `http://localhost:18080/shortest_paths?start=${hotel.nearestNode}&end=${chosen.map(n => n.nearestNode).join(',')}`,
+    `${MAP_BACKEND}/shortest_paths?start=${hotel.nearestNode}&end=${chosen.map(n => n.nearestNode).join(',')}`,
   )).paths
   for (const target of chosen) {
     const path = result[target.nearestNode]
