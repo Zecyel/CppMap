@@ -1,10 +1,23 @@
+import { useCenterPoint } from '../composables/useCenter'
 import { MAP_BACKEND } from '../constants'
 import type { NodeId, Location } from '../types'
 import { Options } from './computeOptions'
 import { fetchJson } from './fetchJson'
 import { computePathLength } from './pathLength'
 
-export async function computeDays(options: Options, chosen: Location[], days: number, hotel: Location): Promise<Location[][]> {
+export async function computeDays(options: Options, chosen: Location[], days: number): Promise<Location[][]> {
+  console.log('compute Days with options:', options, 'chosen:', chosen, 'days:', days)
+
+  const center = useCenterPoint(chosen.map(n => n.coord))
+
+  const hotel: Location = {
+    name: 'Hotel',
+    description: 'Hotel',
+    coord: [center.value[0], center.value[1]],
+    nearestNode: (await fetchJson(`${MAP_BACKEND}/nearest_point?lat=${center.value[0]}&lon=${center.value[1]}`)).nearest_point
+  }
+  console.log('hotel', hotel)
+
   // 枚举 chosen 的每个全排列
   const n = chosen.length
   const perm: Location[][] = []
@@ -26,10 +39,11 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
     }
   }
   dfs(0)
+  console.log('perm', perm)
 
   const paths: Record<NodeId, { path: [number, number][], distance: number }> = {}
   const result = (await fetchJson(
-    `${MAP_BACKEND}/shortest_paths?start=${hotel.nearestNode}&end=${chosen.map(n => n.nearestNode).join(',')}`,
+    `${MAP_BACKEND}/shortest_paths?start=${hotel.nearestNode}&ends=${chosen.map(n => n.nearestNode).join(',')}`,
   )).paths
   for (const target of chosen) {
     const path = result[target.nearestNode]
@@ -38,7 +52,10 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
     paths[target.nearestNode] = { path: normalizedPath, distance: normalizedDistance }
   }
 
+  console.log(result)
   function getDistance(u: NodeId, v: NodeId): number {
+    console.log('getting dist', u, v)
+    if (u === v) return 0
     if (u === hotel.nearestNode) return paths[v].distance
     if (v === hotel.nearestNode) return paths[u].distance
     return options.paths[u][v].distance || options.paths[v][u].distance
@@ -48,6 +65,7 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
   let ans = Number.MAX_SAFE_INTEGER
   let best: Location[][] = []
   for (const p of perm) {
+    console.log('calculating', p)
     const dailyPaths: Location[][] = []
     const chunkSize = Math.ceil(n / days)
     for (let i = 0; i < days; i++) {
@@ -62,11 +80,13 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
         sum += getDistance(dayPath[i].nearestNode, dayPath[i + 1].nearestNode)
       }
     }
+    console.log('sum=', sum)
     if (sum < ans) {
       ans = sum
       best = dailyPaths
     }
   }
+  console.log('best', best)
 
   return best
 }
