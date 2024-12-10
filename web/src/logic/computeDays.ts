@@ -46,6 +46,8 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
     signal,
   ))?.paths
   if (!result) return [] // Aborted
+
+  options.paths[hotel.nearestNode] = {}
   for (const target of chosen) {
     const path = result[target.nearestNode]
     const normalizedPath = path.map(({ lat, lon }: any) => [lat, lon] as [number, number])
