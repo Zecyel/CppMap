@@ -28,6 +28,7 @@ export function usePath(path: MaybeRefOrGetter<L.LatLngExpression[] | null | und
 
   watch(normalized, (path) => {
     polyline.setLatLngs(path);
+    focus();
   })
 
   function remove() {
