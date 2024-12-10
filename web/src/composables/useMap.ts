@@ -25,7 +25,7 @@ export const useMap = createSharedComposable(() => {
   const focusedCoord = ref<string>();
 
   function focus(coord: L.LatLngExpression) {
-    map.flyTo(coord, 18);
+    map.flyTo(coord, 16);
     focusedCoord.value = coord.toString();
   }
 
