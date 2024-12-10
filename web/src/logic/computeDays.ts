@@ -18,28 +18,6 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
     nearestNode: (await fetchJson(`${MAP_BACKEND}/nearest_point?lat=${center[0]}&lon=${center[1]}`)).nearest_point
   }
 
-  // 枚举 chosen 的每个全排列
-  const n = chosen.length
-  const perm: Location[][] = []
-  const vis = Array(n).fill(false)
-  const path: Location[] = []
-  const dfs = (u: number) => {
-    if (u === n) {
-      perm.push([...path])
-      return
-    }
-    for (let i = 0; i < n; i++) {
-      if (!vis[i]) {
-        vis[i] = true
-        path.push(chosen[i])
-        dfs(u + 1)
-        path.pop()
-        vis[i] = false
-      }
-    }
-  }
-  dfs(0)
-
   const result = (await fetchJson(
     `${MAP_BACKEND}/shortest_paths?start=${hotel.nearestNode}&ends=${chosen.map(n => n.nearestNode).sort().join(',')}`,
     signal,
@@ -60,40 +38,53 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
     options.paths[hotel.nearestNode][target.nearestNode] = { path: normalizedPath, distance: normalizedDistance }
   }
 
-  // 将行程平均分为 days 天，每天早上从酒店出发，晚上回到酒店
+  // 枚举 chosen 的每个全排列
+  const n = chosen.length
+  const perm: Location[][] = []
+  const vis = Array(n).fill(false)
+  const path: Location[] = []
   let min_loss = Number.MAX_SAFE_INTEGER, ans = Number.MAX_SAFE_INTEGER
   let best: Location[][] = []
-  for (const p of perm) {
-    const dailyPaths: Location[][] = []
-    let remaining = n
-    let start = 0
-    for (let i = 0; i < days; i++) {
-      const chunkSize = Math.ceil(remaining / (days - i))
-      const end = start + chunkSize
-      const dayPath = [hotel, ...p.slice(start, end), hotel]
-      dailyPaths.push(dayPath)
-      start = end
-      remaining -= chunkSize
-    }
-    let loss = 0, sum = 0
-    for (const dayPath of dailyPaths) {
-      let today_len = 0
-      for (let i = 0; i + 1 < dayPath.length; i++) {
-        let dist = options.getDistance(dayPath[i].nearestNode, dayPath[i + 1].nearestNode)
-        if (dist === undefined) {
-          dist = Number.MAX_SAFE_INTEGER
+
+  const dfs = (u: number, currentLoss: number, currentSum: number) => {
+    if (u === n) {
+      if (currentLoss < min_loss) {
+        min_loss = currentLoss
+        best = []
+        let remaining = n
+        let start = 0
+        for (let i = 0; i < days; i++) {
+          const chunkSize = Math.ceil(remaining / (days - i))
+          const end = start + chunkSize
+          const dayPath = [hotel, ...path.slice(start, end), hotel]
+          best.push(dayPath)
+          start = end
+          remaining -= chunkSize
         }
-        today_len += dist
+        ans = currentSum
       }
-      loss += today_len * today_len
-      sum += today_len
+      return
     }
-    if (loss < min_loss) {
-      min_loss = loss
-      best = dailyPaths
-      ans = sum
+    for (let i = 0; i < n; i++) {
+      if (!vis[i]) {
+        vis[i] = true
+        path.push(chosen[i])
+        let newLoss = currentLoss
+        let newSum = currentSum
+        if (u > 0) {
+          const dist = options.getDistance(path[u - 1].nearestNode, chosen[i].nearestNode) || Number.MAX_SAFE_INTEGER
+          newSum += dist
+          newLoss += dist * dist
+        }
+        if (newLoss < min_loss) {
+          dfs(u + 1, newLoss, newSum)
+        }
+        path.pop()
+        vis[i] = false
+      }
     }
   }
+  dfs(0, 0, 0)
 
   return {
     hotel,
