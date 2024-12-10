@@ -1,6 +1,6 @@
 import { tryOnScopeDispose } from "@vueuse/core";
 import L from "leaflet";
-import { MaybeRefOrGetter, toValue, watch, watchEffect } from "vue";
+import { computed, MaybeRefOrGetter, toValue, watch, watchEffect } from "vue";
 import focusedIcon from "../assets/marker-focused.png?url";
 import normalIcon from "../assets/marker.png?url";
 import disabledIcon from "../assets/marker-disabled.png?url";
@@ -16,16 +16,17 @@ const iconNormal = L.icon({ iconUrl: normalIcon, ...iconOptions });
 const iconFocused = L.icon({ iconUrl: focusedIcon, ...iconOptions });
 const iconDisabled = L.icon({ iconUrl: disabledIcon, ...iconOptions });
 
-export function usePin(coord: MaybeRefOrGetter<L.LatLngExpression>, disabled: MaybeRefOrGetter<boolean> = false) {
+export function usePin(coord: MaybeRefOrGetter<L.LatLngExpression>, show: MaybeRefOrGetter<boolean> = true, disabled: MaybeRefOrGetter<boolean> = false) {
   const { map, focusedCoord, focus: _focus } = useMap();
   const focus = () => _focus(toValue(coord));
 
-  const pin = L.marker(toValue(coord));
+  const shownCoord = computed<L.LatLngExpression>(() => toValue(show) ? toValue(coord) : [0, 0]);
+  const pin = L.marker(shownCoord.value);
 
   pin.addTo(map);
 
   watchEffect(() => {
-    pin.setLatLng(toValue(coord));
+    pin.setLatLng(shownCoord.value);
   })
 
   pin.addEventListener("click", focus)

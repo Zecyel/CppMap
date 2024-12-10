@@ -8,7 +8,7 @@ const props = defineProps<{
   disabledPin?: boolean
 }>()
 
-const { focus } = usePin(() => props.showPin ? props.location.coord : [0, 0], () => props.disabledPin)
+const { focus } = usePin(() => props.location.coord, () => props.showPin, () => props.disabledPin)
 </script>
 
 <template>
