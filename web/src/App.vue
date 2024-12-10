@@ -62,6 +62,7 @@ async function run() {
     options.value = result
     const { map } = useMap();
     map.fitBounds(result.locations.map(l => l.coord))
+    chosenIndexes.value = result.locations.map((_, i) => i)
   }
 
   computing.value = false
