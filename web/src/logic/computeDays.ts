@@ -1,22 +1,22 @@
-import { useCenterPoint } from '../composables/useCenter'
+// import { useCenterPoint } from '../composables/useCenter'
 import { MAP_BACKEND } from '../constants'
 import type { NodeId, Location } from '../types'
 import { Options } from './computeOptions'
 import { fetchJson } from './fetchJson'
 import { computePathLength } from './pathLength'
 
-export async function computeDays(options: Options, chosen: Location[], days: number): Promise<Location[][]> {
+export async function computeDays(options: Options, chosen: Location[], days: number, hotel: Location, signal: AbortSignal): Promise<Location[][]> {
   console.log('compute Days with options:', options, 'chosen:', chosen, 'days:', days)
 
-  const center = useCenterPoint(chosen.map(n => n.coord))
+  // const center = useCenterPoint(chosen.map(n => n.coord))
 
-  const hotel: Location = {
-    name: 'Hotel',
-    description: 'Hotel',
-    coord: [center.value[0], center.value[1]],
-    nearestNode: (await fetchJson(`${MAP_BACKEND}/nearest_point?lat=${center.value[0]}&lon=${center.value[1]}`)).nearest_point
-  }
-  console.log('hotel', hotel)
+  // const hotel: Location = {
+  //   name: 'Hotel',
+  //   description: 'Hotel',
+  //   coord: [center.value[0], center.value[1]],
+  //   nearestNode: (await fetchJson(`${MAP_BACKEND}/nearest_point?lat=${center.value[0]}&lon=${center.value[1]}`)).nearest_point
+  // }
+  // console.log('hotel', hotel)
 
   // 枚举 chosen 的每个全排列
   const n = chosen.length
@@ -44,6 +44,7 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
   const paths: Record<NodeId, { path: [number, number][], distance: number }> = {}
   const result = (await fetchJson(
     `${MAP_BACKEND}/shortest_paths?start=${hotel.nearestNode}&ends=${chosen.map(n => n.nearestNode).join(',')}`,
+    { signal },
   )).paths
   for (const target of chosen) {
     const path = result[target.nearestNode]
