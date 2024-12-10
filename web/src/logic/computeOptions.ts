@@ -55,8 +55,10 @@ export default async function computeOptions(city: string, prompt: string | numb
     },
     getPath(u: NodeId, v: NodeId): [number, number][] {
       if (u === v) return []
-      const value = paths[u][v]?.path || paths[v][u]?.path
-      if (value) return value
+      const forward = paths[u][v]?.path
+      if (forward) return forward
+      const backward = paths[v][u]?.path
+      if (backward) return [...backward].reverse()
       throw new Error(`Internal error: no path computed between ${u} and ${v}`)
     }
   }
