@@ -38,7 +38,19 @@ const days = asyncComputed((onCancel) => {
 }, [], { lazy: true })
 
 const activeDay = ref(0)
-usePath(() => days.value?.[activeDay.value]?.map(({ coord }) => coord))
+usePath(() => {
+  const day = days.value?.[activeDay.value]
+  if (!day || !options.value) return null
+  const paths: [number, number][][] = []
+  let last: Location | null = null
+  for (const location of day) {
+    if (last) {
+      paths.push(options.value.getPath(last.nearestNode, location.nearestNode))
+    }
+    last = location
+  }
+  return paths.flat()
+})
 
 async function run() {
   computing.value = true

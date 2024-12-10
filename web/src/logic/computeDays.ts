@@ -41,7 +41,6 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
   dfs(0)
   console.log('perm', perm)
 
-  const paths: Record<NodeId, { path: [number, number][], distance: number }> = {}
   const result = (await fetchJson(
     `${MAP_BACKEND}/shortest_paths?start=${hotel.nearestNode}&ends=${chosen.map(n => n.nearestNode).join(',')}`,
     { signal },
@@ -50,18 +49,7 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
     const path = result[target.nearestNode]
     const normalizedPath = path.map(({ lat, lon }: any) => [lat, lon] as [number, number])
     const normalizedDistance = computePathLength(normalizedPath)
-    paths[target.nearestNode] = { path: normalizedPath, distance: normalizedDistance }
-  }
-
-  console.log(result)
-  function getDistance(u: NodeId, v: NodeId): number {
-    console.log('getting dist', u, v)
-    if (u === v) return 0
-    if (u === hotel.nearestNode) return paths[v].distance
-    if (v === hotel.nearestNode) return paths[u].distance
-    const nonHotel = options.paths[u][v]?.distance || options.paths[v][u]?.distance
-    if (nonHotel) return nonHotel
-    throw new Error(`Internal error: no path computed between ${u} and ${v}`)
+    options.paths[hotel.nearestNode][target.nearestNode] = { path: normalizedPath, distance: normalizedDistance }
   }
 
   // 将行程平均分为 days 天，每天早上从酒店出发，晚上回到酒店
@@ -84,7 +72,7 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
     let sum = 0
     for (const dayPath of dailyPaths) {
       for (let i = 0; i + 1 < dayPath.length; i++) {
-        let dist = getDistance(dayPath[i].nearestNode, dayPath[i + 1].nearestNode)
+        let dist = options.getDistance(dayPath[i].nearestNode, dayPath[i + 1].nearestNode)
         console.log('dist=', dist)
         if (dist === undefined) {
           dist = Number.MAX_SAFE_INTEGER
