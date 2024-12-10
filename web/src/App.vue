@@ -25,12 +25,11 @@ const canceled = ref(false)
 const options = shallowRef<Options>()
 const chosenIndexes = ref<number[]>([])
 const chosen = computed(() => options.value ? chosenIndexes.value.map(i => options.value!.locations[i]) : [])
-const hotel = ref<Location>()
 const days = asyncComputed((onCancel) => {
-  if (options.value && hotel.value) {
+  if (options.value) {
     const abortController = new AbortController()
     onCancel(() => abortController.abort())
-    return computeDays(options.value, chosen.value, dayNum.value, hotel.value, abortController.signal)
+    return computeDays(options.value, chosen.value, dayNum.value, abortController.signal)
   } else {
     return []
   }
