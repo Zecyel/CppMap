@@ -11,6 +11,7 @@ crow::response add_cors_headers(crow::response&& res) {
   res.add_header("Access-Control-Allow-Origin", "*");
   res.add_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.add_header("Access-Control-Allow-Headers", "Content-Type");
+  res.add_header("Cache-Control", "public, max-age=31536000");
   return std::move(res);
 }
 
