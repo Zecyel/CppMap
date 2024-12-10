@@ -65,7 +65,7 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
   }
 
   // 将行程平均分为 days 天，每天早上从酒店出发，晚上回到酒店
-  let ans = Number.MAX_SAFE_INTEGER
+  let min_loss = Number.MAX_SAFE_INTEGER, ans = Number.MAX_SAFE_INTEGER
   let best: Location[][] = []
   for (const p of perm) {
     console.log('calculating', p)
@@ -81,22 +81,26 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
       remaining -= chunkSize
     }
     console.log(dailyPaths)
-    let sum = 0
+    let loss = 0, sum = 0
     for (const dayPath of dailyPaths) {
+      let today_len = 0
       for (let i = 0; i + 1 < dayPath.length; i++) {
         let dist = options.getDistance(dayPath[i].nearestNode, dayPath[i + 1].nearestNode)
         console.log('dist=', dist)
         if (dist === undefined) {
           dist = Number.MAX_SAFE_INTEGER
-          console.log('met undefined!')
+          console.log('undefined met!')
         }
-        sum += dist
+        today_len += dist
       }
+      loss += today_len * today_len
+      sum += today_len
     }
-    console.log('sum=', sum)
-    if (sum < ans) {
-      ans = sum
+    console.log('loss=', loss)
+    if (loss < min_loss) {
+      min_loss = loss
       best = dailyPaths
+      ans = sum
     }
   }
   console.log('best', best)
