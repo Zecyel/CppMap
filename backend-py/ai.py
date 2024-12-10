@@ -38,8 +38,8 @@ def get_attractions():
         "duration": 0.5,
         "description": "景点的简介1"
     },
-    
 ]
+请给出尽可能多的数据
 ```
 """ % place_name).strip()
 
