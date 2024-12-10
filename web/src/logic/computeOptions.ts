@@ -19,7 +19,7 @@ export default async function computeOptions(city: string, prompt: string | numb
             description: position.description,
             coord: [lat, lon],
             time: position.duration + 'h',
-            nearestNode: (await fetchJson(`http://localhost:18080/nearest_node?lat=${lat}&lon=${lon}`)).nearest_point
+            nearestNode: (await fetchJson(`http://localhost:18080/nearest_point?lat=${lat}&lon=${lon}`)).nearest_point
         } satisfies Location
     }))
 
@@ -28,7 +28,7 @@ export default async function computeOptions(city: string, prompt: string | numb
         paths[start.nearestNode] = {}
         const ends = locations.slice(i + 1)
         const result = (await fetchJson(
-            `http://localhost:18080/shortest_paths?start=${start.nearestNode}&end=${ends.map(n => n.nearestNode).join(',')}`,
+            `http://localhost:18080/shortest_paths?start=${start.nearestNode}&ends=${ends.map(n => n.nearestNode).join(',')}`,
         )).paths
         for (const [j, path] of result.entries()) {
             const normalizedPath = path.map(({ lat, lon }: any) => [lat, lon] as [number, number])
