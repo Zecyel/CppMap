@@ -41,7 +41,7 @@ const routes = computed(() => days.value?.routes ?? [])
 usePin(() => days.value?.hotel.coord ?? [0,0])
 
 const activeDay = ref(0)
-usePath(() => {
+const { focus: focusPath } = usePath(() => {
   const day = days.value?.routes?.[activeDay.value]
   if (!day || !options.value) return null
   const paths: [number, number][][] = []
@@ -156,7 +156,7 @@ watch([city, prompt], reset)
           <div i-carbon-calendar />
           行程安排
         </h2>
-        <Tabs v-if="chosen.length" name="Day" v-model="activeDay" :num="routes.length" h-full>
+        <Tabs v-if="chosen.length" name="Day" v-model="activeDay" :num="routes.length" @change="focusPath" h-full>
           <Routes v-for="route, i in routes" :key="i" v-show="i === activeDay" :locations="route" />
         </Tabs>
         <div v-else>

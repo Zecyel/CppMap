@@ -18,13 +18,16 @@ export function usePath(path: MaybeRefOrGetter<L.LatLngExpression[] | null | und
 
   polyline.addTo(map);
 
-  watch(normalized, (path) => {
-    polyline.setLatLngs(path);
-    if (path.length > 1) {
+  function focus() {
+    if (normalized.value.length > 1) {
       setTimeout(() => {
         map.fitBounds(polyline.getBounds().pad(0.1));
       }, 30)
     }
+  }
+
+  watch(normalized, (path) => {
+    polyline.setLatLngs(path);
   })
 
   function remove() {
@@ -36,5 +39,6 @@ export function usePath(path: MaybeRefOrGetter<L.LatLngExpression[] | null | und
   return {
     polyline,
     remove,
+    focus,
   }
 }

@@ -8,6 +8,8 @@ const props = defineProps<{
 
 const active = defineModel<number>({ default: 0 })
 
+defineEmits(['change'])
+
 watch(() => props.num, () => {
   if (active.value > props.num) {
     active.value = props.num
@@ -25,7 +27,7 @@ function onWheel(event: WheelEvent) {
 <template>
   <div flex flex-col gap-2>
     <div ref="scroll" of-x-scroll flex style="scrollbar-width: none;" @wheel="onWheel">
-      <div v-for="i in num" :key="i" @click="active = i - 1"
+      <div v-for="i in num" :key="i" @click="active = i - 1; $emit('change', i - 1)"
         px-2 py-1 cursor-pointer select-none hover:bg-gray-200 active:bg-gray-300 min-w-max
         :class="i - 1 === active ? 'bg-gray-200' : ''"
       >
