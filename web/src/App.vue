@@ -10,6 +10,7 @@ import { computeDays } from './logic/computeDays';
 import computeOptions, { Options } from './logic/computeOptions';
 import { asyncComputed } from '@vueuse/core';
 import type { Location } from './types'
+import { usePin } from './composables/usePin';
 
 onMounted(() => {
   const { map } = useMap();
@@ -37,6 +38,7 @@ const days = asyncComputed((onCancel) => {
   }
 }, null, { lazy: true })
 const routes = computed(() => days.value?.routes ?? [])
+usePin(() => days.value?.hotel.coord ?? [0,0])
 
 const activeDay = ref(0)
 usePath(() => {
@@ -143,8 +145,8 @@ watch([city, dayNum, prompt], reset)
           景点选择
         </h2>
 
-        <MultiSelect :num="options.locations.length" v-model="chosenIndexes" v-slot="{ index }" flex-grow h-0>
-          <LocationShow :location="options.locations[index]" hover:bg-gray-200 active:bg-gray-300 px-2 py-1 flex-grow
+        <MultiSelect :num="options.locations.length" v-model="chosenIndexes" v-slot="{ index, selected }" flex-grow h-0>
+          <LocationShow :location="options.locations[index]" :disabled-pin="!selected" hover:bg-gray-200 active:bg-gray-300 px-2 py-1 flex-grow
             show-pin />
         </MultiSelect>
       </div>

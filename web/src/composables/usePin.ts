@@ -1,8 +1,9 @@
 import { tryOnScopeDispose } from "@vueuse/core";
 import L from "leaflet";
-import { MaybeRefOrGetter, ref, toValue, watchEffect } from "vue";
+import { MaybeRefOrGetter, toValue, watch, watchEffect } from "vue";
 import focusedIcon from "../assets/marker-focused.png?url";
 import normalIcon from "../assets/marker.png?url";
+import disabledIcon from "../assets/marker-disabled.png?url";
 import { useMap } from "./useMap";
 
 const iconScale = 0.5;
@@ -11,17 +12,11 @@ const iconOptions = {
   iconAnchor: [25 * iconScale, 82 * iconScale] as L.PointTuple,
 }
 
-const iconNormal = L.icon({
-  iconUrl: normalIcon,
-  ...iconOptions,
-});
+const iconNormal = L.icon({ iconUrl: normalIcon, ...iconOptions });
+const iconFocused = L.icon({ iconUrl: focusedIcon, ...iconOptions });
+const iconDisabled = L.icon({ iconUrl: disabledIcon, ...iconOptions });
 
-const iconFocused = L.icon({
-  iconUrl: focusedIcon,
-  ...iconOptions,
-});
-
-export function usePin(coord: MaybeRefOrGetter<L.LatLngExpression>) {
+export function usePin(coord: MaybeRefOrGetter<L.LatLngExpression>, disabled: MaybeRefOrGetter<boolean> = false) {
   const { map, focusedCoord, focus: _focus } = useMap();
   const focus = () => _focus(toValue(coord));
 
@@ -37,7 +32,13 @@ export function usePin(coord: MaybeRefOrGetter<L.LatLngExpression>) {
 
   watchEffect(() => {
     const focused = focusedCoord.value === toValue(coord).toString();
-    pin.setIcon(focused ? iconFocused : iconNormal);
+    pin.setIcon(toValue(disabled) ? iconDisabled : focused ? iconFocused : iconNormal);
+  })
+
+  watch(() => toValue(disabled), (disabled) => {
+    if (disabled && focusedCoord.value === toValue(coord).toString()) {
+      focusedCoord.value = undefined
+    }
   })
 
   function remove() {

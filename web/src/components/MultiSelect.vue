@@ -4,7 +4,7 @@ defineProps<{
 }>()
 
 defineSlots<{
-  default(props: { index: number }): any
+  default(props: { index: number, selected: boolean }): any
 }>()
 
 const selected = defineModel<number[]>({
@@ -27,7 +27,7 @@ function toggle(item: number) {
         <div v-if="selected.includes(no - 1)" i-carbon-checkbox-checked />
         <div v-else i-carbon-checkbox />
       </div>
-      <slot :index="no - 1" />
+      <slot :index="no - 1" :selected="selected.includes(no - 1)" />
     </div>
   </div>
 </template>
