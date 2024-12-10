@@ -59,7 +59,9 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
     if (u === v) return 0
     if (u === hotel.nearestNode) return paths[v].distance
     if (v === hotel.nearestNode) return paths[u].distance
-    return options.paths[u][v].distance || options.paths[v][u].distance
+    const nonHotel = options.paths[u][v]?.distance || options.paths[v][u]?.distance
+    if (nonHotel) return nonHotel
+    throw new Error(`Internal error: no path computed between ${u} and ${v}`)
   }
 
   // 将行程平均分为 days 天，每天早上从酒店出发，晚上回到酒店
