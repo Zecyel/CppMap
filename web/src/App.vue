@@ -60,6 +60,8 @@ async function run() {
 
   if (!canceled.value) {
     options.value = result
+    const { map } = useMap();
+    map.fitBounds(result.locations.map(l => l.coord))
   }
 
   computing.value = false
