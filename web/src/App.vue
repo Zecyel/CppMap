@@ -33,13 +33,14 @@ const days = asyncComputed((onCancel) => {
     onCancel(() => abortController.abort())
     return computeDays(options.value, chosen.value, dayNum.value, abortController.signal)
   } else {
-    return []
+    return null
   }
-}, [], { lazy: true })
+}, null, { lazy: true })
+const routes = computed(() => days.value?.routes ?? [])
 
 const activeDay = ref(0)
 usePath(() => {
-  const day = days.value?.[activeDay.value]
+  const day = days.value?.routes?.[activeDay.value]
   if (!day || !options.value) return null
   const paths: [number, number][][] = []
   let last: Location | null = null
@@ -150,8 +151,8 @@ watch([city, dayNum, prompt], reset)
           <div i-carbon-calendar />
           行程安排
         </h2>
-        <Tabs v-if="chosen.length" name="Day" v-model="activeDay" :num="days.length" h-full>
-          <Routes v-for="day, i in days" :key="i" v-show="i === activeDay" :locations="day" />
+        <Tabs v-if="chosen.length" name="Day" v-model="activeDay" :num="routes.length" h-full>
+          <Routes v-for="route, i in routes" :key="i" v-show="i === activeDay" :locations="route" />
         </Tabs>
         <div v-else>
           <div text-center text-gray-500>

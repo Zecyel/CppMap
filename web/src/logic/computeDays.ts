@@ -5,7 +5,10 @@ import { fetchJson } from './fetchJson'
 import { getCenter } from './getCenter'
 import { computePathLength } from './pathLength'
 
-export async function computeDays(options: Options, chosen: Location[], days: number, signal: AbortSignal): Promise<Location[][]> {
+export async function computeDays(options: Options, chosen: Location[], days: number, signal: AbortSignal): Promise<{
+  hotel: Location,
+  routes: Location[][],
+}> {
   console.log('compute Days with options:', options, 'chosen:', chosen, 'days:', days)
 
   const center = getCenter(chosen.map(n => n.coord))
@@ -45,7 +48,13 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
     `${MAP_BACKEND}/shortest_paths?start=${hotel.nearestNode}&ends=${chosen.map(n => n.nearestNode).sort().join(',')}`,
     signal,
   ))?.paths
-  if (!result) return [] // Aborted
+  if (!result) {
+    // Aborted
+    return {
+      hotel,
+      routes: [],
+    }
+  }
 
   options.paths[hotel.nearestNode] = {}
   for (const target of chosen) {
@@ -92,5 +101,8 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
   }
   console.log('best', best)
 
-  return best
+  return {
+    hotel,
+    routes: best,
+  }
 }

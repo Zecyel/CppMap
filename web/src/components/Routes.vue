@@ -15,7 +15,7 @@ defineProps<{
         <div bg-black rounded-full min-w-6 h-6 flex items-center justify-center>
           <div i-carbon-location-filled text-white  />
         </div>
-        <LocationShow :location mt--.5 flex-grow />
+        <LocationShow :location :show-pin="/*hotel*/ i === 1 || i === locations.length" mt--.5 flex-grow />
       </div>
     </div>
   </div>
