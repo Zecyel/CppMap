@@ -7,6 +7,7 @@ export interface Location {
   coord: [number, number]
   distance?: string
   time?: string
+  nearestNode?: string,
 }
 
 const props = defineProps<{
