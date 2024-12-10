@@ -67,17 +67,27 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
   for (const p of perm) {
     console.log('calculating', p)
     const dailyPaths: Location[][] = []
-    const chunkSize = Math.ceil(n / days)
+    let remaining = n
+    let start = 0
     for (let i = 0; i < days; i++) {
-      const start = i * chunkSize
-      const end = Math.min(start + chunkSize, n)
+      const chunkSize = Math.ceil(remaining / (days - i))
+      const end = start + chunkSize
       const dayPath = [hotel, ...p.slice(start, end), hotel]
       dailyPaths.push(dayPath)
+      start = end
+      remaining -= chunkSize
     }
+    console.log(dailyPaths)
     let sum = 0
     for (const dayPath of dailyPaths) {
       for (let i = 0; i + 1 < dayPath.length; i++) {
-        sum += getDistance(dayPath[i].nearestNode, dayPath[i + 1].nearestNode)
+        let dist = getDistance(dayPath[i].nearestNode, dayPath[i + 1].nearestNode)
+        console.log('dist=', dist)
+        if (dist === undefined) {
+          dist = Number.MAX_SAFE_INTEGER
+          console.log('met undefined!')
+        }
+        sum += dist
       }
     }
     console.log('sum=', sum)
