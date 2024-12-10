@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { usePin } from '../composables/usePin'
-
-export interface Location {
-  name: string
-  description: string
-  coord: [number, number]
-  distance?: string
-  time?: string
-  nearestNode?: string,
-}
+import type { Location } from '../types'
 
 const props = defineProps<{
   location: Location

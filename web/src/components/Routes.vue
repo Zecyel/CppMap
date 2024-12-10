@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import LocationShow, { type Location } from './LocationShow.vue';
+import LocationShow from './LocationShow.vue';
+import type { Location } from '../types'
 
 defineProps<{
   locations: Location[]

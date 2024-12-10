@@ -1,11 +1,14 @@
-type NodeId = number
+import type { NodeId, Location } from '../types'
+import { Options } from './computeOptions'
+import { fetchJson } from './fetchJson'
+import { computePathLength } from './pathLength'
 
-export async function computeDays(chosen: NodeId[], days: number, hotel: NodeId): NodeId[][] {
+export async function computeDays(options: Options, chosen: Location[], days: number, hotel: Location): Promise<Location[][]> {
   // 枚举 chosen 的每个全排列
   const n = chosen.length
-  const perm: NodeId[][] = []
+  const perm: Location[][] = []
   const vis = Array(n).fill(false)
-  const path: NodeId[] = []
+  const path: Location[] = []
   const dfs = (u: number) => {
     if (u === n) {
       perm.push([...path])
@@ -23,15 +26,28 @@ export async function computeDays(chosen: NodeId[], days: number, hotel: NodeId)
   }
   dfs(0)
 
-  const dist = async (s: NodeId, t: NodeId) => {
-    return 0; // calc the dist between s and t
+  const paths: Record<NodeId, { path: [number, number][], distance: number }> = {}
+  const result = (await fetchJson(
+    `http://localhost:18080/shortest_paths?start=${hotel.nearestNode}&end=${chosen.map(n => n.nearestNode).join(',')}`,
+  )).paths
+  for (const target of chosen) {
+    const path = result[target.nearestNode]
+    const normalizedPath = path.map(({ lat, lon }: any) => [lat, lon] as [number, number])
+    const normalizedDistance = computePathLength(normalizedPath)
+    paths[target.nearestNode] = { path: normalizedPath, distance: normalizedDistance }
+  }
+
+  function getDistance(u: NodeId, v: NodeId): number {
+    if (u === hotel.nearestNode) return paths[v].distance
+    if (v === hotel.nearestNode) return paths[u].distance
+    return options.paths[u][v].distance || options.paths[v][u].distance
   }
 
   // 将行程平均分为 days 天，每天早上从酒店出发，晚上回到酒店
   let ans = Number.MAX_SAFE_INTEGER
-  let best: NodeId[][] = []
+  let best: Location[][] = []
   for (const p of perm) {
-    const dailyPaths: NodeId[][] = []
+    const dailyPaths: Location[][] = []
     const chunkSize = Math.ceil(n / days)
     for (let i = 0; i < days; i++) {
       const start = i * chunkSize
@@ -42,7 +58,7 @@ export async function computeDays(chosen: NodeId[], days: number, hotel: NodeId)
     let sum = 0
     for (const dayPath of dailyPaths) {
       for (let i = 0; i + 1 < dayPath.length; i++) {
-        sum += await dist(dayPath[i], dayPath[i + 1])
+        sum += getDistance(dayPath[i].nearestNode, dayPath[i + 1].nearestNode)
       }
     }
     if (sum < ans) {

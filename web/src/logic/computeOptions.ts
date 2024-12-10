@@ -1,4 +1,4 @@
-import { Location } from "../components/LocationShow.vue"
+import type { Location } from '../types'
 import { fetchJson } from "./fetchJson"
 import { computePathLength } from "./pathLength"
 

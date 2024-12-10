@@ -8,6 +8,8 @@ import { useMap } from './composables/useMap';
 import { usePath } from './composables/usePath';
 import { computeDays } from './logic/computeDays';
 import computeOptions, { Options } from './logic/computeOptions';
+import { asyncComputed } from '@vueuse/core';
+import type { Location } from './types'
 
 onMounted(() => {
   const { map } = useMap();
@@ -23,7 +25,8 @@ const canceled = ref(false)
 const options = ref<Options>()
 const chosenIndexes = ref<number[]>([])
 const chosen = computed(() => options.value ? chosenIndexes.value.map(i => options.value!.locations[i]) : [])
-const days = computed(() => computeDays(chosen.value, dayNum.value))
+const hotel = ref<Location>()
+const days = asyncComputed(() => options.value && hotel.value ? computeDays(options.value, chosen.value, dayNum.value, hotel.value) : [], [], { lazy: true })
 
 const activeDay = ref(0)
 usePath(() => days.value?.[activeDay.value]?.map(({ coord }) => coord))
