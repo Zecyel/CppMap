@@ -28,6 +28,7 @@ export default async function computeOptions(city: string, prompt: string | numb
     await Promise.all(locations.entries().map(async ([i, start]) => {
         paths[start.nearestNode] = {}
         const ends = locations.slice(i + 1)
+        if (ends.length == 0) return;
         const result = (await fetchJson(
             `${MAP_BACKEND}/shortest_paths?start=${start.nearestNode}&ends=${ends.map(n => n.nearestNode).join(',')}`,
         )).paths
