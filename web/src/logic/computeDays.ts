@@ -4,7 +4,7 @@ import { Options } from './computeOptions'
 import { fetchJson } from './fetchJson'
 import { computePathLength } from './pathLength'
 
-export async function computeDays(options: Options, chosen: Location[], days: number, hotel: Location): Promise<Location[][]> {
+export async function computeDays(options: Options, chosen: Location[], days: number, hotel: Location, signal: AbortSignal): Promise<Location[][]> {
   // 枚举 chosen 的每个全排列
   const n = chosen.length
   const perm: Location[][] = []
@@ -30,6 +30,7 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
   const paths: Record<NodeId, { path: [number, number][], distance: number }> = {}
   const result = (await fetchJson(
     `${MAP_BACKEND}/shortest_paths?start=${hotel.nearestNode}&end=${chosen.map(n => n.nearestNode).join(',')}`,
+    { signal },
   )).paths
   for (const target of chosen) {
     const path = result[target.nearestNode]

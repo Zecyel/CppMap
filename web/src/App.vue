@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, Teleport, watch } from 'vue';
+import { computed, onMounted, ref, shallowRef, Teleport, watch } from 'vue';
 import LocationShow from './components/LocationShow.vue';
 import MultiSelect from './components/MultiSelect.vue';
 import Routes from './components/Routes.vue';
@@ -22,11 +22,19 @@ const prompt = ref<string | number>(1)
 const promptDialog = ref(false)
 const computing = ref(false)
 const canceled = ref(false)
-const options = ref<Options>()
+const options = shallowRef<Options>()
 const chosenIndexes = ref<number[]>([])
 const chosen = computed(() => options.value ? chosenIndexes.value.map(i => options.value!.locations[i]) : [])
 const hotel = ref<Location>()
-const days = asyncComputed(() => options.value && hotel.value ? computeDays(options.value, chosen.value, dayNum.value, hotel.value) : [], [], { lazy: true })
+const days = asyncComputed((onCancel) => {
+  if (options.value && hotel.value) {
+    const abortController = new AbortController()
+    onCancel(() => abortController.abort())
+    return computeDays(options.value, chosen.value, dayNum.value, hotel.value, abortController.signal)
+  } else {
+    return []
+  }
+}, [], { lazy: true })
 
 const activeDay = ref(0)
 usePath(() => days.value?.[activeDay.value]?.map(({ coord }) => coord))
@@ -35,7 +43,7 @@ async function run() {
   computing.value = true
   canceled.value = false
   const result = await computeOptions(city.value, prompt.value)
-  
+
   if (!canceled.value) {
     options.value = result
   }
@@ -75,7 +83,8 @@ watch([city, dayNum, prompt], reset)
         </label>
         <label flex-grow flex gap-3 items-center pl-2>
           <div i-carbon-window-overlay text-lg op-60 />
-          <input v-model="dayNum" type="number" placeholder="Days" flex-grow py-2 bg-transparent w-0 step="1" min="1" max="9" />
+          <input v-model="dayNum" type="number" placeholder="Days" flex-grow py-2 bg-transparent w-0 step="1" min="1"
+            max="9" />
         </label>
         <div grid grid-cols-3 min-h-max>
           <div class="kind-button" :data-active="prompt === 1" @click="prompt = 1">
@@ -86,7 +95,8 @@ watch([city, dayNum, prompt], reset)
             <div i-carbon-running />
             Fulfill
           </div>
-          <div class="kind-button" :data-active="typeof prompt === 'string'" @click="promptDialog = true; typeof prompt === 'string' || (prompt = '')">
+          <div class="kind-button" :data-active="typeof prompt === 'string'"
+            @click="promptDialog = true; typeof prompt === 'string' || (prompt = '')">
             <div i-carbon-add-comment />
             Custom
           </div>
@@ -98,7 +108,8 @@ watch([city, dayNum, prompt], reset)
           <div op-60> Computing... </div>
           <div absolute inset-0 flex class="group">
             <div flex-grow />
-            <div flex items-center justify-end op-40 group-hover:op-60 hover:op-100 px-4 h-full hover:bg-gray-200 @click="reset">
+            <div flex items-center justify-end op-40 group-hover:op-60 hover:op-100 px-4 h-full hover:bg-gray-200
+              @click="reset">
               <div i-carbon-close-large text-xl />
             </div>
           </div>
@@ -116,7 +127,8 @@ watch([city, dayNum, prompt], reset)
         </h2>
 
         <MultiSelect :num="options.locations.length" v-model="chosenIndexes" v-slot="{ index }" flex-grow h-0>
-          <LocationShow :location="options.locations[index]" hover:bg-gray-200 active:bg-gray-300 px-2 py-1 flex-grow show-pin />
+          <LocationShow :location="options.locations[index]" hover:bg-gray-200 active:bg-gray-300 px-2 py-1 flex-grow
+            show-pin />
         </MultiSelect>
       </div>
 
@@ -136,13 +148,16 @@ watch([city, dayNum, prompt], reset)
       </div>
     </template>
     <Teleport v-if="promptDialog" to="body">
-      <div fixed inset-0 z-100 backdrop-blur-.4 bg-gray-800 bg-op-40 flex items-center justify-center @click="promptDialog = false">
+      <div fixed inset-0 z-100 backdrop-blur-.4 bg-gray-800 bg-op-40 flex items-center justify-center
+        @click="promptDialog = false">
         <div relative w-200 max-w-full bg-white p-4 flex flex-col gap-4 rounded @click.stop="">
-          <button absolute right-4 top-4 w-10 h-10 flex items-center justify-center rounded class="p0!" @click="promptDialog = false">
+          <button absolute right-4 top-4 w-10 h-10 flex items-center justify-center rounded class="p0!"
+            @click="promptDialog = false">
             <div i-carbon-checkmark text-2xl />
           </button>
           <div text-2xl pt-1> Custom Prompt </div>
-          <textarea v-model="prompt" placeholder="Any additional information for AI?" w-full resize-none bg-gray-100 focus:bg-gray-200 p-2 rounded h-80 />
+          <textarea v-model="prompt" placeholder="Any additional information for AI?" w-full resize-none bg-gray-100
+            focus:bg-gray-200 p-2 rounded h-80 />
         </div>
       </div>
     </Teleport>
