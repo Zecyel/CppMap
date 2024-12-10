@@ -9,8 +9,6 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
   hotel: Location,
   routes: Location[][],
 }> {
-  console.log('compute Days with options:', options, 'chosen:', chosen, 'days:', days)
-
   const center = getCenter(chosen.map(n => n.coord))
 
   const hotel: Location = {
@@ -19,7 +17,6 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
     coord: center,
     nearestNode: (await fetchJson(`${MAP_BACKEND}/nearest_point?lat=${center[0]}&lon=${center[1]}`)).nearest_point
   }
-  console.log('hotel', hotel)
 
   // 枚举 chosen 的每个全排列
   const n = chosen.length
@@ -42,7 +39,6 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
     }
   }
   dfs(0)
-  console.log('perm', perm)
 
   const result = (await fetchJson(
     `${MAP_BACKEND}/shortest_paths?start=${hotel.nearestNode}&ends=${chosen.map(n => n.nearestNode).sort().join(',')}`,
@@ -68,7 +64,6 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
   let min_loss = Number.MAX_SAFE_INTEGER, ans = Number.MAX_SAFE_INTEGER
   let best: Location[][] = []
   for (const p of perm) {
-    console.log('calculating', p)
     const dailyPaths: Location[][] = []
     let remaining = n
     let start = 0
@@ -80,30 +75,25 @@ export async function computeDays(options: Options, chosen: Location[], days: nu
       start = end
       remaining -= chunkSize
     }
-    console.log(dailyPaths)
     let loss = 0, sum = 0
     for (const dayPath of dailyPaths) {
       let today_len = 0
       for (let i = 0; i + 1 < dayPath.length; i++) {
         let dist = options.getDistance(dayPath[i].nearestNode, dayPath[i + 1].nearestNode)
-        console.log('dist=', dist)
         if (dist === undefined) {
           dist = Number.MAX_SAFE_INTEGER
-          console.log('undefined met!')
         }
         today_len += dist
       }
       loss += today_len * today_len
       sum += today_len
     }
-    console.log('loss=', loss)
     if (loss < min_loss) {
       min_loss = loss
       best = dailyPaths
       ans = sum
     }
   }
-  console.log('best', best)
 
   return {
     hotel,

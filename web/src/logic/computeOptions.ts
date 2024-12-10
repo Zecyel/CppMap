@@ -39,7 +39,6 @@ export default async function computeOptions(city: string, prompt: string | numb
       paths[start.nearestNode][end.nearestNode] = { path: normalizedPath, distance: normalizedDistance }
     }
   }))
-  console.log('Shortest paths between options:', paths)
 
   const hotels: Hotel[] = (await fetchJson(`${MAP_BACKEND}/hotels`)).hotel_nodes
 
