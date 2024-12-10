@@ -1,6 +1,6 @@
 type NodeId = number
 
-export async function computeDays(chosen: NodeId[], days: number, hotel: NodeId): NodeId[][] {
+export async function computeDays(chosen: NodeId[], days: number, hotel: NodeId): Promise<NodeId[][]> {
   // 枚举 chosen 的每个全排列
   const n = chosen.length
   const perm: NodeId[][] = []
