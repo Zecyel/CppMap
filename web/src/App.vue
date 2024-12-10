@@ -26,6 +26,8 @@ const options = shallowRef<Options>()
 const chosenIndexes = ref<number[]>([])
 const chosen = computed(() => options.value ? chosenIndexes.value.map(i => options.value!.locations[i]) : [])
 const days = asyncComputed((onCancel) => {
+  // Track deps
+  void [options.value, chosen.value, dayNum.value]
   if (options.value) {
     const abortController = new AbortController()
     onCancel(() => abortController.abort())
