@@ -127,7 +127,7 @@ watch([city, dayNum, prompt], reset)
             </div>
           </div>
         </div>
-        <div v-else @click="run" text-lg h-full flex items-center justify-center>
+        <div v-else @click="city.trim() && run()" text-lg h-full flex items-center justify-center :class="city.trim() ? '' : 'op-40'">
           Run!
         </div>
       </div>
