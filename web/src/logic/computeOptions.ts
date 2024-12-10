@@ -26,14 +26,14 @@ export default async function computeOptions(city: string, prompt: string | numb
     const paths: Record<string, Record<string, { path: [number, number][], distance: number }>> = {}
     await Promise.all(locations.entries().map(async ([i, start]) => {
         paths[start.nearestNode] = {}
-        for (const end of locations.slice(i + 1)) {
-            const { path, distance } = await fetchJson(
-                `http://localhost:18080/shortest_path?start=${start.nearestNode}&end=${end.nearestNode}`,
-                () => ({ path: [] as any[], distance: Number.MAX_SAFE_INTEGER })
-            )
-            const normalizedPath = path.map(({ lat, lon }) => [lat, lon] as [number, number])
-            const normalizedDistance = distance ?? computePathLength(normalizedPath)
-            paths[start.nearestNode][end.nearestNode] = { path: normalizedPath, distance: normalizedDistance }
+        const ends = locations.slice(i + 1)
+        const result = (await fetchJson(
+            `http://localhost:18080/shortest_paths?start=${start.nearestNode}&end=${ends.map(n => n.nearestNode).join(',')}`,
+        )).paths
+        for (const [j, path] of result.entries()) {
+            const normalizedPath = path.map(({ lat, lon }: any) => [lat, lon] as [number, number])
+            const normalizedDistance = computePathLength(normalizedPath)
+            paths[start.nearestNode][ends[j].nearestNode] = { path: normalizedPath, distance: normalizedDistance }
         }
     }))
     console.log('Shortest paths between options:', paths)
