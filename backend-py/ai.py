@@ -39,8 +39,8 @@ def get_attractions():
         "description": "景点的简介1"
     },
 ]
-请给出尽可能多的数据
 ```
+请给出尽可能多的数据
 """ % place_name).strip()
 
     global ret
